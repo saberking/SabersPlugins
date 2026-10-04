@@ -351,7 +351,9 @@ public:
             if(j<2){
                 data_in[i]=data->sampleData[j][i].load(std::memory_order_relaxed);
             }else{
-                data_in[i]=(*convolver)[i];
+                if(i<dspPointer->convolverLength)
+                    data_in[i]=(*convolver)[i];
+                else data_in[i]=0.f;
             }
         }
 
@@ -1567,7 +1569,7 @@ public:
 
             ImPlotRect limits = ImPlot::GetPlotLimits();
             int x_min = std::max(0,std::min(data->length.load(std::memory_order_relaxed)/2,(int)limits.X.Min));
-            int x_max = std::min(data->length.load(std::memory_order_relaxed)/2,std::max(x_min,(int)limits.X.Max));
+            int x_max = std::min(data->length.load(std::memory_order_relaxed)/2+1,std::max(x_min,(int)limits.X.Max));
             ImPlotSpectrumContext plotCtx = { spectrum[channel], x_min };
 
             ImPlot::PlotScatterG("Spectrum", SpectrumGetter, &plotCtx, x_max-x_min, spec);
@@ -1633,7 +1635,7 @@ public:
 
             ImPlotRect limits = ImPlot::GetPlotLimits();
             int x_min = std::max(0,std::min(data->length.load(std::memory_order_relaxed)/2,(int)limits.X.Min));
-            int x_max = std::min(data->length.load(std::memory_order_relaxed)/2,std::max(x_min,(int)limits.X.Max));
+            int x_max = std::min(data->length.load(std::memory_order_relaxed)/2+1,std::max(x_min,(int)limits.X.Max));
             ImPlotSpectrumContext plotCtx = { spectrum[channel], x_min };
 
             ImPlot::PlotScatterG("Phase", PhaseGetter,&plotCtx, x_max-x_min, spec);
