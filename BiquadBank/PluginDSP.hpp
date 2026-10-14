@@ -5,7 +5,6 @@
 #include "Parameters.hpp"
 #include "WinConsoleOutput.hpp"
 #include "external/base64.h"
-#include "Undo.hpp"
 #include "external/Eigen/Dense"
 #include <atomic>
 #include <ctime>
@@ -53,7 +52,7 @@ public:
     std::atomic<ActivationFunctionType> activation=activationFunctionClip;
     float lastDelay=0;
 
-    UndoItem *undoItems[MAX_UNDO_DEPTH];
+    //UndoItem *undoItems[MAX_UNDO_DEPTH];
     int nextUndoIndex=0;
     int undoCount=0,redoCount=0;
 
@@ -68,10 +67,10 @@ public:
             consoleAttached=true;
         }
 
-        for(int i=0;i<MAX_UNDO_DEPTH;i++)
-        {
-            undoItems[i]=NULL;
-        }
+        // for(int i=0;i<MAX_UNDO_DEPTH;i++)
+        // {
+        //     undoItems[i]=NULL;
+        // }
 
 
         std::srand(std::time(nullptr));
@@ -145,10 +144,10 @@ public:
 
 
     ~ImGuiPluginDSP(){
-        for(int i=0;i<MAX_UNDO_DEPTH;i++)
-        {
-            if(undoItems[i])delete undoItems[i];
-        }
+        // for(int i=0;i<MAX_UNDO_DEPTH;i++)
+        // {
+        //     if(undoItems[i])delete undoItems[i];
+        // }
     }
 
 protected:

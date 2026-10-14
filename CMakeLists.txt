@@ -32,6 +32,8 @@ execute_process(
 # ) this was for opengl screenbuffer but not necessary
 
 add_subdirectory(dpf)
+add_compile_definitions(ImDrawIdx=unsigned\ int)
+
 
 list(APPEND TARGETS_LIST "clap")
 list(APPEND TARGETS_LIST "vst3")
@@ -70,9 +72,54 @@ target_include_directories(BAKED PUBLIC BAKED)
 target_include_directories(BAKED PUBLIC dpf-widgets/generic)
 target_include_directories(BAKED PUBLIC dpf-widgets/opengl)
 target_include_directories(BAKED PUBLIC dpf-widgets/opengl/DearImGui)
-add_compile_definitions(ImDrawIdx=unsigned\ int)
-
-
 
 target_link_libraries(BAKED-ui PRIVATE comctl32)
+
+dpf_add_plugin(BiquadBank
+  TARGETS ${TARGETS_LIST}
+  FILES_DSP
+      BiquadBank/PluginDSP.cpp
+      common/external/base64.cpp
+  FILES_UI
+      BiquadBank/PluginUI.cpp
+      # BiquadBank/external/implot.cpp
+      # BiquadBank/external/implot_items.cpp
+      dpf-widgets/opengl/DearImGui.cpp)
+
+target_sources(BiquadBank
+  PRIVATE
+    BiquadBank/Parameters.hpp
+    # src/DragAndDrop.hpp
+    common/WinConsoleOutput.hpp
+    # src/Editor.hpp
+    # src/AudioData.hpp
+
+    BiquadBank/PluginDSP.hpp
+    BiquadBank/Defines.hpp
+    # src/features.txt
+    common/Undo.hpp
+)
+
+target_include_directories(BiquadBank PUBLIC common)
+target_include_directories(BiquadBank PUBLIC BiquadBank)
+target_include_directories(BiquadBank PUBLIC dpf-widgets/generic)
+target_include_directories(BiquadBank PUBLIC dpf-widgets/opengl)
+target_include_directories(BiquadBank PUBLIC dpf-widgets/opengl/DearImGui)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(BiquadBank-ui PRIVATE comctl32)
+
+endif()
+# 1. Enable full optimizations, fast-math, and native SIMD instructions (AVX/AVX2/NEON)
+target_compile_options(BiquadBank PRIVATE
+    -O3
+    -Ofast
+    -march=native
+)
+
+# 2. Crucial for Eigen: Disable safety/assert checks so it can compile down to pure SIMD registers
+target_compile_definitions(BiquadBank PRIVATE
+    NDEBUG
+        EIGEN_DONT_PARALLELIZE  # 🚀 FIXES MULTI-INSTANCE AUDIO CRASHES PERMANENTLY
+)
 

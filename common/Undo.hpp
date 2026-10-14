@@ -1,8 +1,8 @@
 #ifndef UNDO_HPP
 #define UNDO_HPP
-
+#include <vector>
+#include <atomic>
 #include "src/DistrhoDefines.h"
-#include "Defines.hpp"
 START_NAMESPACE_DISTRHO
 #define MAX_UNDO_DEPTH 12
 
