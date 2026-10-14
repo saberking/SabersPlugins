@@ -63,7 +63,7 @@ target_sources(BAKED
     BAKED/PluginDSP.hpp
     BAKED/Defines.hpp
     BAKED/features.txt
-    common/Undo.hpp
+    BAKED/Undo.hpp
 )
 
 target_include_directories(BAKED PUBLIC common)
@@ -97,7 +97,6 @@ target_sources(BiquadBank
     BiquadBank/PluginDSP.hpp
     BiquadBank/Defines.hpp
     # src/features.txt
-    common/Undo.hpp
 )
 
 target_include_directories(BiquadBank PUBLIC common)
@@ -119,6 +118,54 @@ target_compile_options(BiquadBank PRIVATE
 
 # 2. Crucial for Eigen: Disable safety/assert checks so it can compile down to pure SIMD registers
 target_compile_definitions(BiquadBank PRIVATE
+    NDEBUG
+        EIGEN_DONT_PARALLELIZE  # 🚀 FIXES MULTI-INSTANCE AUDIO CRASHES PERMANENTLY
+)
+
+dpf_add_plugin(neural
+  TARGETS ${TARGETS_LIST}
+  FILES_DSP
+      neural/PluginDSP.cpp
+      common/external/base64.cpp
+  FILES_UI
+      neural/PluginUI.cpp
+      # src/external/implot.cpp
+      # src/external/implot_items.cpp
+      dpf-widgets/opengl/DearImGui.cpp)
+
+target_sources(neural
+  PRIVATE
+    neural/Parameters.hpp
+    # src/DragAndDrop.hpp
+    common/WinConsoleOutput.hpp
+    # src/Editor.hpp
+    # src/AudioData.hpp
+
+    neural/PluginDSP.hpp
+    neural/Defines.hpp
+    # src/features.txt
+)
+
+target_include_directories(neural PUBLIC common)
+
+target_include_directories(neural PUBLIC neural)
+target_include_directories(neural PUBLIC dpf-widgets/generic)
+target_include_directories(neural PUBLIC dpf-widgets/opengl)
+target_include_directories(neural PUBLIC dpf-widgets/opengl/DearImGui)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(neural-ui PRIVATE comctl32)
+
+endif()
+# 1. Enable full optimizations, fast-math, and native SIMD instructions (AVX/AVX2/NEON)
+target_compile_options(neural PRIVATE
+    -O3
+    -Ofast
+    -march=native
+)
+
+# 2. Crucial for Eigen: Disable safety/assert checks so it can compile down to pure SIMD registers
+target_compile_definitions(neural PRIVATE
     NDEBUG
         EIGEN_DONT_PARALLELIZE  # 🚀 FIXES MULTI-INSTANCE AUDIO CRASHES PERMANENTLY
 )

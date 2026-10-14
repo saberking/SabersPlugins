@@ -5,8 +5,8 @@
 #include "Parameters.hpp"
 #include "WinConsoleOutput.hpp"
 #include "external/base64.h"
-#include "Undo.hpp"
 #include "external/Eigen/Dense"
+#include "Defines.hpp"
 #include <atomic>
 #include <ctime>
 #include "external/Eigen/SVD" // Make sure to include the SVD header at the top of your file
@@ -47,9 +47,9 @@ public:
     std::atomic<bool> updateReady=false;
     int lastDelay=0;
 
-    UndoItem *undoItems[MAX_UNDO_DEPTH];
-    int nextUndoIndex=0;
-    int undoCount=0,redoCount=0;
+    // UndoItem *undoItems[MAX_UNDO_DEPTH];
+    // int nextUndoIndex=0;
+    // int undoCount=0,redoCount=0;
     alignas(64) float weightBuffer1[OUT_SIZE*(OUT_SIZE+CONSTANT_KNOB_COUNT)];
     alignas(64) float weightBuffer2[OUT_SIZE*(OUT_SIZE+CONSTANT_KNOB_COUNT)];
     std::atomic<float *> weightBufferPointer;
@@ -64,10 +64,10 @@ public:
             consoleAttached=true;
         }
 
-        for(int i=0;i<MAX_UNDO_DEPTH;i++)
-        {
-            undoItems[i]=NULL;
-        }
+        // for(int i=0;i<MAX_UNDO_DEPTH;i++)
+        // {
+        //     undoItems[i]=NULL;
+        // }
 
         for(int i=0;i<OUT_SIZE*(OUT_SIZE+CONSTANT_KNOB_COUNT);i++)
         {
@@ -277,10 +277,10 @@ public:
         printEigen(weightBufferPointer.load(std::memory_order_acquire));
     }
     ~ImGuiPluginDSP(){
-        for(int i=0;i<MAX_UNDO_DEPTH;i++)
-        {
-            if(undoItems[i])delete undoItems[i];
-        }
+        // for(int i=0;i<MAX_UNDO_DEPTH;i++)
+        // {
+        //     if(undoItems[i])delete undoItems[i];
+        // }
     }
 
 protected:
