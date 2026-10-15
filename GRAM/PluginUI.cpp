@@ -168,13 +168,67 @@ protected:
         if (ImGui::BeginTable("Awesom table",width)){
 #define X(i)\
             ImGui::TableNextColumn();\
-            if (ImGuiKnobs::Knob("inLvl"#i, &fInLvl##i, -1.f, 1.0f)) {\
+            if (ImGuiKnobs::Knob("inVol##"#i, &fInLvl##i, -1.f, 1.0f)) {\
+                if(ImGui::IsItemActivated())\
+                    editParameter(kParamInLvl##i,true);\
+                setParameterValue(kParamInLvl##i,fInLvl##i);\
             }\
-            ImGui::TableNextColumn();\
-            if (ImGuiKnobs::Knob("inPan"#i, &fInPan##i, -M_PI/2, M_PI/2, 0.1f, "%.1f", ImGuiKnobVariant_Stepped)) {\
+            if (ImGui::IsItemDeactivated())\
+            {\
+                editParameter(kParamInLvl##i, false);\
             }\
+            if(InfiniteKnob("inPhs##"#i,&fInPhs##i,-M_PI,M_PI)){\
+                if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPhs##i,true);\
+                setParameterValue(kParamInPhs##i,fInPhs##i);\
+            }\
+            if (ImGui::IsItemDeactivated())\
+            {\
+                editParameter(kParamInPhs##i, false);\
+            }\
+\
             ImGui::TableNextColumn();\
-            InfiniteKnob("inPhs"#i,&fInPhs##i,-M_PI,M_PI);
+                if (ImGuiKnobs::Knob("inPan##"#i, &fInPan##i, -M_PI/2, M_PI/2, 0.1f, "%.1f", ImGuiKnobVariant_Stepped)) {\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPan##i,true);\
+                    setParameterValue(kParamInPan##i,fInPan##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInPan##i, false);\
+            }\
+                if(InfiniteKnob("inPOff##"#i,&fInPOff##i,-M_PI,M_PI)){\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPOff##i,true);\
+                    setParameterValue(kParamInPOff##i,fInPOff##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInPOff##i, false);\
+            }\
+            \
+            ImGui::TableNextColumn();\
+                if (ImGuiKnobs::Knob("feed##"#i, &fFeed##i, -1.f, 1.0f)) {\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamFeed##i,true);\
+                    setParameterValue(kParamFeed##i,fFeed##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamFeed##i, false);\
+            }\
+                if(InfiniteKnob("freq##"#i,&fFreq##i,-M_PI,M_PI)){\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamFreq##i,true);\
+                    setParameterValue(kParamFreq##i,fFreq##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamFreq##i, false);\
+            }
+
+
+
 
             BIQUAD_LIST
 #undef X

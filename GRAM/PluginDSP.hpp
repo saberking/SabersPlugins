@@ -164,18 +164,21 @@ protected:
 #define X(i) \
         \
         panAngle=M_PI/4.f+fInPan##i/2.f;\
-        inLvl=std::polar<float>(fInLvl##i,fInPhs##i);\
-        inL(i)=inLvl*std::polar<float>(std::cos(panAngle),-fInPOff##i/2.f);\
-        inR(i)=inLvl*std::polar<float>(std::sin(panAngle),fInPOff##i/2.f);\
-        lambda(i)=std::polar<float>(fFeed##i,fFreq##i*M_PI/24000.f);\
+        if(panAngle>M_PI/2||panAngle<0)std::cout<<"ERRORERRORREREOEREOR  "<<panAngle<<std::endl;\
+        inLvl=std::polar<float>(std::abs(fInLvl##i),fInLvl##i<0?fInPhs##i+M_PI:fInPhs##i);\
+        inL(i)=inLvl*std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fInPOff##i/2.f);\
+        inR(i)=inLvl*std::polar<float>(std::sin(std::max(panAngle,0.f)),fInPOff##i/2.f);\
+        lambda(i)=std::polar<float>(std::abs(fFeed##i),fFeed##i<0?fFreq##i*M_PI/24000.f-M_PI:fFreq##i*M_PI/24000.f);\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outL(i)=std::polar<float>(std::cos(panAngle),-fOutPOff##i/2);\
         outR(i)=std::polar<float>(std::sin(panAngle),fOutPOff##i/2);\
-        outL(i)*=std::polar<float>(fLvl##i,fPhs##i);\
-        outR(i)*=std::polar<float>(fLvl##i,fPhs##i);
+        outL(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);\
+        outR(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);
 
         BIQUAD_LIST
 #undef X
+
+        std::cout<<"Finsihed calcultee"<<std::endl;
     }
 
 
