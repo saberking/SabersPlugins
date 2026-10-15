@@ -252,13 +252,14 @@ protected:
                 }
 
             }
+            time5+=getTimeInterval();
 
             outputs[0][sample] = clip(2.f*std::real(outL.matrix().dot(state[inputBufferIndex].matrix())));
             outputs[1][sample] = clip(2.f*std::real(outR.matrix().dot(state[inputBufferIndex].matrix())));
 
+            time6+=getTimeInterval();
 
 
-            time5+=getTimeInterval();
             if(!(framecounter++%48000)) printTime();
         }
 
