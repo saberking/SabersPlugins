@@ -24,10 +24,8 @@ static const char* activationFunctionNames[]={
         "Tanh",
         "None"
     };
+#define MAX_DELAY 10000
 
-#define OUT_SIZE 30
-#define STRIDE (OUT_SIZE)
-#define MAX_DELAY 1000
 class ImGuiPluginDSP : public Plugin
 {
 #define X(i) \
@@ -50,7 +48,7 @@ public:
 
     std::atomic<ActivationFunctionType> activation=activationFunctionClip;
 
-    Eigen::Array<std::complex<float>,25,1>inL, inR, outL, outR, lambda,state[MAX_DELAY+1];
+    Eigen::Array<std::complex<float>,BIQUAD_COUNT,1>state[MAX_DELAY+1], inL, inR, outL, outR, lambda;
 
     int inputBufferIndex=0;
     ImGuiPluginDSP()
@@ -74,65 +72,24 @@ public:
         calculateMatrix();
     }
 
-    float findMaxAmplification(float* outPointer)
-    {
-        Eigen::Map<Eigen::Matrix<float, OUT_SIZE, OUT_SIZE, Eigen::RowMajor>> W(outPointer);
-
-        // Isolate the square audio feedback block (e.g., 24x24)
-        Eigen::Matrix<float, OUT_SIZE, OUT_SIZE> audioBlock = W.block<OUT_SIZE, OUT_SIZE>(0, 0);
-
-        // Compute the Singular Value Decomposition (SVD)
-        // We only need the singular values, so we pass 0 to skip computing U and V matrices (saves CPU)
-        Eigen::JacobiSVD<Eigen::Matrix<float, OUT_SIZE, OUT_SIZE>> svd(audioBlock, 0);
-
-        // The singular values are always returned sorted from highest to lowest.
-        // Index 0 is mathematically guaranteed to be the maximum amplification factor!
-        float maxAmplification = svd.singularValues()[0];
-
-        std::cout << "Absolute Highest Single-Hop Amplification Factor: " << maxAmplification << std::endl;
-
-        return maxAmplification;
-    }
 
 
-    void randomise()
-    {
-        std::complex<float> one=std::complex(1.f,0.f);
-        inL(0)=one;inR(0)=one;
-        lambda(0)=std::complex(0.5f,0.1f);
-        outL(0)=one;outR(0)=one;
-        Eigen::Array<std::complex<float>, 25, 1> matrix;
-        matrix.setRandom();
-        float noiseAmount=0.1f;
-        inL+=matrix*noiseAmount;
-        matrix.setRandom();
 
-        outL+=matrix*noiseAmount;
-        matrix.setRandom();
 
-        inR+=matrix*noiseAmount;
-        matrix.setRandom();
 
-        outR+=matrix*noiseAmount;
-        matrix.setRandom();
+    // void printEigen(float *outPointer)
+    // {
+    //     Eigen::Map<Eigen::Matrix<float, OUT_SIZE, OUT_SIZE, Eigen::RowMajor>> W(outPointer);
 
-        lambda+=matrix*noiseAmount;
+    //     Eigen::EigenSolver<Eigen::Matrix<float, OUT_SIZE-2, OUT_SIZE-2>> solver(W.block<OUT_SIZE-2, OUT_SIZE-2>(2, 2), false);
+    //     float maxMagnitude = 0.0f;
+    //     for (int i = 0; i < OUT_SIZE-2; ++i) {
+    //         maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
+    //     }
+    //     std::cout<<"maxMAgnitude "<<maxMagnitude<<std::endl;
+    //     //float mult=1/findMaxAmplification(outPointer);
 
-    }
-
-    void printEigen(float *outPointer)
-    {
-        Eigen::Map<Eigen::Matrix<float, OUT_SIZE, OUT_SIZE, Eigen::RowMajor>> W(outPointer);
-
-        Eigen::EigenSolver<Eigen::Matrix<float, OUT_SIZE-2, OUT_SIZE-2>> solver(W.block<OUT_SIZE-2, OUT_SIZE-2>(2, 2), false);
-        float maxMagnitude = 0.0f;
-        for (int i = 0; i < OUT_SIZE-2; ++i) {
-            maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
-        }
-        std::cout<<"maxMAgnitude "<<maxMagnitude<<std::endl;
-        //float mult=1/findMaxAmplification(outPointer);
-
-    }
+    // }
 
 
 
@@ -217,7 +174,6 @@ protected:
 #undef X
     }
 
-    int count=0;
 
     std::chrono::steady_clock::time_point start=std::chrono::steady_clock::now();
     float time1=0, time2=0, time3=0, time4=0, time5=0, time6=0, time7=0, time8=0;
@@ -257,7 +213,6 @@ protected:
         ActivationFunctionType activationFunction=activation.load(std::memory_order_release);
 
 
-        float delay=0;
 
 
         time1+=getTimeInterval();
