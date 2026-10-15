@@ -170,3 +170,49 @@ target_compile_definitions(neural PRIVATE
         EIGEN_DONT_PARALLELIZE  # 🚀 FIXES MULTI-INSTANCE AUDIO CRASHES PERMANENTLY
 )
 
+dpf_add_plugin(GRAM
+  TARGETS ${TARGETS_LIST}
+  FILES_DSP
+      GRAM/PluginDSP.cpp
+      common/external/base64.cpp
+  FILES_UI
+      GRAM/PluginUI.cpp
+      # GRAM/external/implot.cpp
+      # GRAM/external/implot_items.cpp
+      dpf-widgets/opengl/DearImGui.cpp)
+
+target_sources(GRAM
+  PRIVATE
+    GRAM/Parameters.hpp
+    # src/DragAndDrop.hpp
+    common/WinConsoleOutput.hpp
+    # src/Editor.hpp
+    # src/AudioData.hpp
+
+    GRAM/PluginDSP.hpp
+    GRAM/Defines.hpp
+    # src/features.txt
+)
+
+target_include_directories(GRAM PUBLIC common)
+target_include_directories(GRAM PUBLIC GRAM)
+target_include_directories(GRAM PUBLIC dpf-widgets/generic)
+target_include_directories(GRAM PUBLIC dpf-widgets/opengl)
+target_include_directories(GRAM PUBLIC dpf-widgets/opengl/DearImGui)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(GRAM-ui PRIVATE comctl32)
+
+endif()
+# 1. Enable full optimizations, fast-math, and native SIMD instructions (AVX/AVX2/NEON)
+target_compile_options(GRAM PRIVATE
+    -O3
+    -Ofast
+    -march=native
+)
+
+# 2. Crucial for Eigen: Disable safety/assert checks so it can compile down to pure SIMD registers
+target_compile_definitions(GRAM PRIVATE
+    NDEBUG
+        EIGEN_DONT_PARALLELIZE  # 🚀 FIXES MULTI-INSTANCE AUDIO CRASHES PERMANENTLY
+)
