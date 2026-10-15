@@ -132,7 +132,10 @@ dpf_add_plugin(GRAM
       GRAM/PluginUI.cpp
       # GRAM/external/implot.cpp
       # GRAM/external/implot_items.cpp
-      dpf-widgets/opengl/DearImGui.cpp)
+      dpf-widgets/opengl/DearImGui.cpp
+      dpf-widgets/opengl/DearImGuiKnobs/imgui-knobs.cpp
+
+  )
 
 target_sources(GRAM
   PRIVATE

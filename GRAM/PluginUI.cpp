@@ -16,6 +16,7 @@
 #include <commctrl.h> // For SetWindowSubclass API
 #include "PluginDSP.hpp"
 #include "InfiniteKnob.hpp"
+#include "DearImGuiKnobs/imgui-knobs.h"
 #pragma comment(lib, "comctl32.lib")
 
 
@@ -152,10 +153,25 @@ protected:
 
         repaint();
     }
-
-    void displayKnob()
+float val1 = 0,val2=0;
+    void displayRow(int index)
     {
+        std::string tableName="Row"+index;
+        int width=8+BIQUAD_COUNT/2;
+        if (ImGui::BeginTable(tableName.c_str(),width)){
+            ImGui::TableNextColumn();
+            if (ImGuiKnobs::Knob("Gain", &val1, -6.0f, 6.0f, 0.1f, "%.1fdB", ImGuiKnobVariant_Tick)) {
+                // value was changed
+            }
+            ImGui::TableNextColumn();
 
+
+            if (ImGuiKnobs::Knob("Mix", &val2, -1.0f, 1.0f, 0.1f, "%.1f", ImGuiKnobVariant_Stepped)) {
+                // value was changed
+            }
+
+            ImGui::EndTable();
+        }
     }
 
 
@@ -173,7 +189,7 @@ protected:
         if (ImGui::Begin("GRAM", nullptr, ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoTitleBar))
         {
 
-
+            displayRow(0);
 
             ActivationFunctionType type=getPluginDPSPointer()->activation.load(std::memory_order_relaxed);
             // 2. Render the dropdown
