@@ -233,8 +233,22 @@ protected:
             time3+=getTimeInterval();
             state[inputBufferIndex]*=lambda;
             time4+=getTimeInterval();
-            // state[inputBufferIndex].real() = state[inputBufferIndex].real().cwiseMax(-1.0f).cwiseMin(1.0f);
-            // state[inputBufferIndex].imag() = state[inputBufferIndex].imag().cwiseMax(-1.0f).cwiseMin(1.0f);
+            if(activationFunction==activationFunctionClip)
+            {
+                state[inputBufferIndex].real() = state[inputBufferIndex].real().cwiseMax(-1.0f).cwiseMin(1.0f);
+                state[inputBufferIndex].imag() = state[inputBufferIndex].imag().cwiseMax(-1.0f).cwiseMin(1.0f);
+            }
+
+            if(activationFunction==activationFunctionTanh)
+            {
+                for(int i=0;i<state[inputBufferIndex].size();i++)
+                {
+                    state[inputBufferIndex][i]=std::complex<float>(fastTanh(state[inputBufferIndex][i].real()),
+                                                    fastTanh(state[inputBufferIndex][i].imag()));
+                }
+
+            }
+
             outputs[0][sample] = clip(2.f*std::real(outL.matrix().dot(state[inputBufferIndex].matrix())));
             outputs[1][sample] = clip(2.f*std::real(outR.matrix().dot(state[inputBufferIndex].matrix())));
 
