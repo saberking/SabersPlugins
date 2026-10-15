@@ -4,7 +4,7 @@
 #include "imgui_internal.h" // Needed for ItemAdd
 #include <cmath>
 
-bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 1.0f, float radius = 20.0f) {
+bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 20.0f) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
 
@@ -26,12 +26,14 @@ bool InfiniteKnob(const char* label, float* value, float minValue, float maxValu
     bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
 
     bool value_changed = false;
-    if (held && g.IO.MouseDelta.y != 0.0f) {
-        float range=maxValue-minValue;
+    float range=maxValue-minValue;
+
+    ImGuiIO& io = ImGui::GetIO();
+    if (held && io.MouseDelta.y != 0.0f) {
         // Drag vertically to change value endlessly
-        *value += g.IO.MouseDelta.y * speed;
-        while(*value>maxValue)value-=range;
-        while(value<minValue)value+=range;
+        *value -= io.MouseDelta.y * speed*range;
+        while(*value>maxValue)*value-=range;
+        while(*value<minValue)*value+=range;
         value_changed = true;
     }
 

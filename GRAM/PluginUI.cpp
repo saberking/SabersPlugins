@@ -15,6 +15,7 @@
 #include <windows.h>
 #include <commctrl.h> // For SetWindowSubclass API
 #include "PluginDSP.hpp"
+#include "InfiniteKnob.hpp"
 #pragma comment(lib, "comctl32.lib")
 
 
@@ -158,6 +159,7 @@ protected:
     }
 
 
+    float shape=0.f;
 
     void onImGuiDisplay() override {
 
@@ -196,8 +198,7 @@ protected:
                 ImGui::EndCombo(); // Always call EndCombo if BeginCombo returns true
             }
             getPluginDPSPointer()->activation.store(type,std::memory_order_relaxed);
-
-
+            InfiniteKnob("zero",&shape,0,M_PI*2);
         }
         //if(!ImGui::IsMouseDown(ImGuiMouseButton_Left)) endDrag();
 
