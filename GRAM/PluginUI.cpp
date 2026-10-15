@@ -30,6 +30,8 @@ class ImGuiPluginUI : public UI
     bool needsNormalise=false;
 public:
 #define X(i)\
+    float fInLvl##i;\
+    float fInPhs##i;\
     float fInPan##i;\
     float fInPOff##i;\
     float fFeed##i;\
@@ -123,6 +125,12 @@ public:
 protected:
     void parameterChanged(uint32_t index, float value) override {
 #define X(i)\
+        if(index==kParamInLvl##i){\
+                fInLvl##i = value;\
+        }\
+            if(index==kParamInPhs##i){\
+                fInPhs##i=value;\
+        }\
         if(index==kParamInPan##i){\
             fInPan##i = value;\
         }\
@@ -153,29 +161,29 @@ protected:
 
         repaint();
     }
-float val1 = 0,val2=0;
-    void displayRow(int index)
+    void displayRows()
     {
-        std::string tableName="Row"+index;
         int width=8+BIQUAD_COUNT/2;
-        if (ImGui::BeginTable(tableName.c_str(),width)){
-            ImGui::TableNextColumn();
-            if (ImGuiKnobs::Knob("Gain", &val1, -6.0f, 6.0f, 0.1f, "%.1fdB", ImGuiKnobVariant_Tick)) {
-                // value was changed
-            }
-            ImGui::TableNextColumn();
 
+        if (ImGui::BeginTable("Awesom table",width)){
+#define X(i)\
+            ImGui::TableNextColumn();\
+            if (ImGuiKnobs::Knob("inLvl"#i, &fInLvl##i, -1.f, 1.0f)) {\
+            }\
+            ImGui::TableNextColumn();\
+            if (ImGuiKnobs::Knob("inPan"#i, &fInPan##i, -M_PI/2, M_PI/2, 0.1f, "%.1f", ImGuiKnobVariant_Stepped)) {\
+            }\
+            ImGui::TableNextColumn();\
+            InfiniteKnob("inPhs"#i,&fInPhs##i,-M_PI,M_PI);
 
-            if (ImGuiKnobs::Knob("Mix", &val2, -1.0f, 1.0f, 0.1f, "%.1f", ImGuiKnobVariant_Stepped)) {
-                // value was changed
-            }
+            BIQUAD_LIST
+#undef X
 
             ImGui::EndTable();
         }
     }
 
 
-    float shape=0.f;
 
     void onImGuiDisplay() override {
 
@@ -189,7 +197,6 @@ float val1 = 0,val2=0;
         if (ImGui::Begin("GRAM", nullptr, ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoTitleBar))
         {
 
-            displayRow(0);
 
             ActivationFunctionType type=getPluginDPSPointer()->activation.load(std::memory_order_relaxed);
             // 2. Render the dropdown
@@ -214,7 +221,8 @@ float val1 = 0,val2=0;
                 ImGui::EndCombo(); // Always call EndCombo if BeginCombo returns true
             }
             getPluginDPSPointer()->activation.store(type,std::memory_order_relaxed);
-            InfiniteKnob("zero",&shape,0,M_PI*2);
+            displayRows();
+
         }
         //if(!ImGui::IsMouseDown(ImGuiMouseButton_Left)) endDrag();
 

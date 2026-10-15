@@ -5,7 +5,7 @@
 
 START_NAMESPACE_DISTRHO
 enum Parameters {
-#define X(i) kParamInPan##i, kParamInPOff##i, kParamFeed##i, kParamFreq##i,kParamOutPan##i, kParamOutPOff##i, kParamLvl##i, kParamPhs##i,
+#define X(i) kParamInLvl##i, kParamInPhs##i, kParamInPan##i, kParamInPOff##i, kParamFeed##i, kParamFreq##i,kParamOutPan##i, kParamOutPOff##i, kParamLvl##i, kParamPhs##i,
     BIQUAD_LIST
 #undef X
     kParamCount

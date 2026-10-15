@@ -29,6 +29,8 @@ static const char* activationFunctionNames[]={
 class ImGuiPluginDSP : public Plugin
 {
 #define X(i) \
+    float fInLvl##i=0.0f;\
+    float fInPhs##i=0.0f;\
     float fInPan##i=0.0f;\
     float fInPOff##i=0.f;\
     float fFeed##i=0.f;\
@@ -150,6 +152,7 @@ protected:
         std::cout<<"calculate"<<std::endl;
 
         float panAngle;
+        std::complex<float> inLvl;
 //pan: zero is 45 degrees, -M_PI/2 is zero degrees, M_PI/2 is 90 degrees
 //left magnitude is cos(pan), right is sin(pan) (0)
 //phase offset:0 to M_PI (0)
@@ -161,8 +164,9 @@ protected:
 #define X(i) \
         \
         panAngle=M_PI/4.f+fInPan##i/2.f;\
-        inL(i)=std::polar<float>(std::cos(panAngle),-fInPOff##i/2.f);\
-        inR(i)=std::polar<float>(std::sin(panAngle),fInPOff##i/2.f);\
+        inLvl=std::polar<float>(fInLvl##i,fInPhs##i);\
+        inL(i)=inLvl*std::polar<float>(std::cos(panAngle),-fInPOff##i/2.f);\
+        inR(i)=inLvl*std::polar<float>(std::sin(panAngle),fInPOff##i/2.f);\
         lambda(i)=std::polar<float>(fFeed##i,fFreq##i*M_PI/24000.f);\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outL(i)=std::polar<float>(std::cos(panAngle),-fOutPOff##i/2);\
@@ -268,6 +272,18 @@ protected:
         parameter.hints = kParameterIsAutomatable;
 
 #define X(i) \
+        if(index == kParamInLvl##i) { \
+                parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
+                parameter.name = "Biquad " #i " InLvl"; \
+                parameter.symbol = "biquad_" #i "_in_lvl"; \
+                return; \
+        } \
+            if(index == kParamInPhs##i) { \
+                parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
+                parameter.name = "Biquad " #i " InPhs"; \
+                parameter.symbol = "biquad_" #i "_in_phs"; \
+                return; \
+        } \
         if(index == kParamInPan##i) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI/2, M_PI/2); \
                 parameter.name = "Biquad " #i " InPan"; \
@@ -275,19 +291,19 @@ protected:
                 return; \
         } \
             if(index == kParamInPOff##i) { \
-                parameter.ranges = ParameterRanges(0.f, 0.f, M_PI); \
+                parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
                 parameter.name = "Biquad " #i " InPOff"; \
                 parameter.symbol = "biquad_" #i "_in_p_off"; \
                 return; \
         } \
             if(index == kParamFeed##i) { \
-                parameter.ranges = ParameterRanges(0.f, 0.f, 1.f); \
+                parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
                 parameter.name = "Biquad " #i " Feed"; \
                 parameter.symbol = "biquad_" #i "_feed"; \
                 return; \
         } \
             if(index == kParamFreq##i) { \
-                parameter.ranges = ParameterRanges(0.f, 0.f, 24000.f); \
+                parameter.ranges = ParameterRanges(0.f, -24000.f, 24000.f); \
                 parameter.name = "Biquad " #i " Freq"; \
                 parameter.symbol = "biquad_" #i "_freq"; \
                 return; \
@@ -299,19 +315,19 @@ protected:
                 return; \
         } \
             if(index == kParamOutPOff##i) { \
-        parameter.ranges = ParameterRanges(0.f, 0.f, M_PI); \
+        parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
                 parameter.name = "Biquad " #i " OutPOff"; \
                 parameter.symbol = "biquad_" #i "_out_p_off"; \
                 return; \
         } \
             if(index == kParamLvl##i) { \
-                parameter.ranges = ParameterRanges(1.f/25.f, 0.f, 1.f); \
+                parameter.ranges = ParameterRanges(1.f/25.f, -1.f, 1.f); \
                 parameter.name = "Biquad " #i " Lvl"; \
                 parameter.symbol = "biquad_" #i "_lvl"; \
                 return; \
         } \
             if(index == kParamPhs##i) { \
-                parameter.ranges = ParameterRanges(0.f, 0.f, M_PI); \
+                parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
                 parameter.name = "Biquad " #i " Phs"; \
                 parameter.symbol = "biquad_" #i "_phs"; \
                 return; \
@@ -324,6 +340,12 @@ protected:
     {
 
 #define X(i) \
+        if(index == kParamInLvl##i) { \
+                return fInLvl##i; \
+        } \
+            if(index==kParamInPhs##i){\
+                return fInPhs##i;\
+        }\
         if(index == kParamInPan##i) { \
                 return fInPan##i; \
         } \
@@ -358,6 +380,12 @@ protected:
     void setParameterValue(uint32_t index, float value) override
     {
         #define X(i) \
+        if(index==kParamInLvl##i){\
+                fInLvl##i=value;\
+        }\
+            if(index==kParamInPhs##i){\
+                fInPhs##i=value;\
+        }\
         if(index==kParamInPan##i){\
             fInPan##i=value;\
         }\
