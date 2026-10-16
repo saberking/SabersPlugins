@@ -155,23 +155,19 @@ protected:
         std::complex<float> inLvl;
 //pan: zero is 45 degrees, -M_PI/2 is zero degrees, M_PI/2 is 90 degrees
 //left magnitude is cos(pan), right is sin(pan) (0)
-//phase offset:0 to M_PI (0)
-//freq: theta goes 0 t M_PI (0), freq from 0 to 24k
-//feed: 0 to 1 (0)
-//lvl: 0 to 1 (0)
-//phase: 0 to M_PI
+
 
 #define X(i) \
         \
         panAngle=M_PI/4.f+fInPan##i/2.f;\
         if(panAngle>M_PI/2||panAngle<0)std::cout<<"ERRORERRORREREOEREOR  "<<panAngle<<std::endl;\
         inLvl=std::polar<float>(std::abs(fInLvl##i),fInLvl##i<0?fInPhs##i+M_PI:fInPhs##i);\
-        inL(i)=inLvl*std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fInPOff##i/2.f);\
-        inR(i)=inLvl*std::polar<float>(std::sin(std::max(panAngle,0.f)),fInPOff##i/2.f);\
+        inL(i)=inLvl*std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fInPOff##i);\
+        inR(i)=inLvl*std::polar<float>(std::sin(std::max(panAngle,0.f)),fInPOff##i);\
         lambda(i)=std::polar<float>(std::abs(fFeed##i),fFeed##i<0?fFreq##i*M_PI/24000.f-M_PI:fFreq##i*M_PI/24000.f);\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
-        outL(i)=std::polar<float>(std::cos(panAngle),-fOutPOff##i/2);\
-        outR(i)=std::polar<float>(std::sin(panAngle),fOutPOff##i/2);\
+        outL(i)=std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fOutPOff##i);\
+        outR(i)=std::polar<float>(std::sin(std::max(panAngle,0.f)),fOutPOff##i);\
         outL(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);\
         outR(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);
 
