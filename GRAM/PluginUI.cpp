@@ -165,11 +165,23 @@ protected:
     {
         int width=8+BIQUAD_COUNT/2;
 
-        if (ImGui::BeginTable("Awesom table",width)){
+        if (ImGui::BeginTable("Awesom table",4)){
+            ImGui::TableNextColumn();
+            ImGui::Text("Input");
+            ImGui::Separator();
+            ImGui::TableNextColumn();
+            ImGui::Text("Eval");
+            ImGui::Separator();
+            ImGui::TableNextColumn();
+            ImGui::Text("GRAM");
+            ImGui::Separator();
+            ImGui::TableNextColumn();
+            ImGui::Text("Output");
+            ImGui::Separator();
 #define X(i)\
             ImGui::PushID(i);\
             ImGui::TableNextColumn();\
-            if (ImGuiKnobs::Knob("inVol", &fInLvl##i, -1.f, 1.0f)) {\
+            if (ImGuiKnobs::Knob("Vol", &fInLvl##i, -4.f, 4.0f)) {\
                 if(ImGui::IsItemActivated())\
                     editParameter(kParamInLvl##i,true);\
                 setParameterValue(kParamInLvl##i,fInLvl##i);\
@@ -178,18 +190,8 @@ protected:
             {\
                 editParameter(kParamInLvl##i, false);\
             }\
-            if(InfiniteKnob("inPhs",&fInPhs##i,-M_PI,M_PI,0.01f,20.f,0)){\
-                if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPhs##i,true);\
-                setParameterValue(kParamInPhs##i,fInPhs##i);\
-            }\
-            if (ImGui::IsItemDeactivated())\
-            {\
-                editParameter(kParamInPhs##i, false);\
-            }\
-\
-            ImGui::TableNextColumn();\
-                if (ImGuiKnobs::Knob("inPan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0, ImGuiKnobFlags_NoTitle)) {\
+            ImGui::SameLine();\
+            if (ImGuiKnobs::Knob("Pan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0, ImGuiKnobFlags_NoTitle)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPan##i,true);\
                     setParameterValue(kParamInPan##i,fInPan##i);\
@@ -198,7 +200,17 @@ protected:
             {\
                     editParameter(kParamInPan##i, false);\
             }\
-                if(InfiniteKnob("inPOff",&fInPOff##i,-M_PI,M_PI)){\
+            if(InfiniteKnob("Phs",&fInPhs##i,-M_PI,M_PI,0.01f,20.f,0)){\
+                if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPhs##i,true);\
+                setParameterValue(kParamInPhs##i,fInPhs##i);\
+            }\
+            if (ImGui::IsItemDeactivated())\
+            {\
+                editParameter(kParamInPhs##i, false);\
+            }\
+            ImGui::SameLine();\
+                if(InfiniteKnob("POff",&fInPOff##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPOff##i,true);\
                     setParameterValue(kParamInPOff##i,fInPOff##i);\
@@ -209,7 +221,7 @@ protected:
             }\
             \
             ImGui::TableNextColumn();\
-                if (ImGuiKnobs::Knob("feed", &fFeed##i, -1.f, 1.0f)) {\
+                if (ImGuiKnobs::Knob("Feed", &fFeed##i, -1.f, 1.0f)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamFeed##i,true);\
                     setParameterValue(kParamFeed##i,fFeed##i);\
@@ -218,7 +230,7 @@ protected:
             {\
                     editParameter(kParamFeed##i, false);\
             }\
-                if(InfiniteKnob("freq",&fFreq##i,-24000,24000)){\
+                if(InfiniteKnob("Freq",&fFreq##i,-24000,24000)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamFreq##i,true);\
                     setParameterValue(kParamFreq##i,fFreq##i);\
@@ -226,6 +238,48 @@ protected:
                 if (ImGui::IsItemDeactivated())\
             {\
                     editParameter(kParamFreq##i, false);\
+            }\
+            ImGui::TableNextColumn();\
+            ImGui::TableNextColumn();\
+            ImGui::PopID();\
+            ImGui::PushID(i+BIQUAD_COUNT);\
+            if (ImGuiKnobs::Knob("Vol", &fLvl##i, -4.f, 4.0f)) {\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInLvl##i,true);\
+                    setParameterValue(kParamInLvl##i,fInLvl##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInLvl##i, false);\
+            }\
+                ImGui::SameLine();\
+                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0, ImGuiKnobFlags_NoTitle)) {\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPan##i,true);\
+                    setParameterValue(kParamInPan##i,fInPan##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInPan##i, false);\
+            }\
+                if(InfiniteKnob("Phs",&fPhs##i,-M_PI,M_PI,0.01f,20.f,0)){\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPhs##i,true);\
+                    setParameterValue(kParamInPhs##i,fInPhs##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInPhs##i, false);\
+            }\
+                ImGui::SameLine();\
+                if(InfiniteKnob("POff",&fOutPOff##i,-M_PI,M_PI)){\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamInPOff##i,true);\
+                    setParameterValue(kParamInPOff##i,fInPOff##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamInPOff##i, false);\
             }\
             ImGui::PopID();
 

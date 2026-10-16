@@ -5,13 +5,17 @@
 #include "DearImGuiKnobs/imgui-knobs.h"
 #include <cmath>
 
-bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 20.0f, int flags=ImGuiKnobFlags_NoTitle) {
+bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 20.0f, int flags=0) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
 
 
     ImVec2 size = ImVec2(radius * 2.0f, radius * 2.0f);
+    // ImGui::BeginGroup();
 
+    // // There's an issue with `SameLine` and Groups, see https://github.com/ocornut/imgui/issues/4190.
+    // // This is probably not the best solution, but seems to work for now
+    // ImGui::GetCurrentWindow()->DC.CurrLineTextBaseOffset = 0;
 
     // Draw title
     if (!(flags & ImGuiKnobFlags_NoTitle)) {
@@ -73,13 +77,13 @@ bool InfiniteKnob(const char* label, float* value, float minValue, float maxValu
 
     // if(!(rand()%100))std::cout<<foo<<std::endl;
     if (!(flags & ImGuiKnobFlags_NoInput)) {
-
+        ImGui::SetNextItemWidth(size.x);
         auto changed = ImGui::DragScalar(foo.c_str(), ImGuiDataType_Float, value, speed, &minValue, &maxValue,"%.2f",ImGuiSliderFlags_Vertical);
         if (changed) {
             value_changed = true;
         }
     }
-
+    // ImGui::EndGroup();
 
     return value_changed;
 }
