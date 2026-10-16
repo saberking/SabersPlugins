@@ -2,20 +2,35 @@
 #define INFINITEKNOB_HPP
 #include "imgui.h"
 #include "imgui_internal.h" // Needed for ItemAdd
+#include "DearImGuiKnobs/imgui-knobs.h"
 #include <cmath>
 
-bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 20.0f) {
+bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 20.0f, int flags=ImGuiKnobFlags_NoTitle) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
 
+
+    ImVec2 size = ImVec2(radius * 2.0f, radius * 2.0f);
+
+
+    // Draw title
+    if (!(flags & ImGuiKnobFlags_NoTitle)) {
+        auto title_size = ImGui::CalcTextSize(label, NULL, false, size.x);
+
+        // Center title
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
+
+        ImGui::Text("%s", label);
+    }
 
     const ImGuiStyle& style = ImGui::GetStyle();
     const ImGuiID id = window->GetID(label);
 
     // Calculate dimensions
     ImVec2 pos = window->DC.CursorPos;
-    ImVec2 size = ImVec2(radius * 2.0f, radius * 2.0f);
     const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+
+
 
     // Register the item in ImGui layout
     ImGui::ItemSize(bb, style.FramePadding.y);
@@ -53,9 +68,18 @@ bool InfiniteKnob(const char* label, float* value, float minValue, float maxValu
     ImU32 indicator_color = ImGui::GetColorU32(held ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab);
     window->DrawList->AddCircleFilled(indicator_pos, radius * 0.2f, indicator_color, 16);
 
-    // Optional text label
-    ImGui::SameLine();
-    ImGui::Text("%s", label);
+    // Draw input
+    std::string foo="##"+std::string(label)+"knob_drag";
+
+    // if(!(rand()%100))std::cout<<foo<<std::endl;
+    if (!(flags & ImGuiKnobFlags_NoInput)) {
+
+        auto changed = ImGui::DragScalar(foo.c_str(), ImGuiDataType_Float, value, speed, &minValue, &maxValue,"%.2f",ImGuiSliderFlags_Vertical);
+        if (changed) {
+            value_changed = true;
+        }
+    }
+
 
     return value_changed;
 }
