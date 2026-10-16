@@ -247,41 +247,41 @@ protected:
             ImGui::PushID(i+BIQUAD_COUNT);\
             if (ImGuiKnobs::Knob("Vol", &fLvl##i, -4.f, 4.0f)) {\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamInLvl##i,true);\
-                    setParameterValue(kParamInLvl##i,fInLvl##i);\
+                    editParameter(kParamLvl##i,true);\
+                    setParameterValue(kParamLvl##i,fLvl##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamInLvl##i, false);\
+                    editParameter(kParamLvl##i, false);\
             }\
                 ImGui::SameLine();\
                 if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0)) {\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPan##i,true);\
-                    setParameterValue(kParamInPan##i,fInPan##i);\
+                    editParameter(kParamOutPan##i,true);\
+                    setParameterValue(kParamOutPan##i,fOutPan##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamInPan##i, false);\
+                    editParameter(kParamOutPan##i, false);\
             }\
                 if(InfiniteKnob("Phs",&fPhs##i,-M_PI,M_PI,0.01f,0.f,0)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPhs##i,true);\
-                    setParameterValue(kParamInPhs##i,fInPhs##i);\
+                    editParameter(kParamPhs##i,true);\
+                    setParameterValue(kParamPhs##i,fPhs##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamInPhs##i, false);\
+                    editParameter(kParamPhs##i, false);\
             }\
                 ImGui::SameLine();\
                 if(InfiniteKnob("POff",&fOutPOff##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPOff##i,true);\
-                    setParameterValue(kParamInPOff##i,fInPOff##i);\
+                    editParameter(kParamOutPOff##i,true);\
+                    setParameterValue(kParamOutPOff##i,fOutPOff##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamInPOff##i, false);\
+                    editParameter(kParamOutPOff##i, false);\
             }\
             ImGui::Separator();\
             ImGui::PopID();
