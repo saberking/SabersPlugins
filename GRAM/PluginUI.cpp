@@ -219,6 +219,7 @@ protected:
             {\
                     editParameter(kParamInPOff##i, false);\
             }\
+            ImGui::Separator();\
             \
             ImGui::TableNextColumn();\
                 if (ImGuiKnobs::Knob("Feed", &fFeed##i, -1.f, 1.0f)) {\
@@ -239,6 +240,7 @@ protected:
             {\
                     editParameter(kParamFreq##i, false);\
             }\
+            ImGui::Separator();\
             ImGui::TableNextColumn();\
             ImGui::TableNextColumn();\
             ImGui::PopID();\
@@ -281,6 +283,7 @@ protected:
             {\
                     editParameter(kParamInPOff##i, false);\
             }\
+            ImGui::Separator();\
             ImGui::PopID();
 
 
