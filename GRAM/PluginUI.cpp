@@ -191,7 +191,7 @@ protected:
                 editParameter(kParamInLvl##i, false);\
             }\
             ImGui::SameLine();\
-            if (ImGuiKnobs::Knob("Pan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0, ImGuiKnobFlags_NoTitle)) {\
+            if (ImGuiKnobs::Knob("Pan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPan##i,true);\
                     setParameterValue(kParamInPan##i,fInPan##i);\
@@ -200,7 +200,7 @@ protected:
             {\
                     editParameter(kParamInPan##i, false);\
             }\
-            if(InfiniteKnob("Phs",&fInPhs##i,-M_PI,M_PI,0.01f,20.f,0)){\
+            if(InfiniteKnob("Phs",&fInPhs##i,-M_PI,M_PI,0.01f,0.f,0)){\
                 if(ImGui::IsItemActivated())\
                     editParameter(kParamInPhs##i,true);\
                 setParameterValue(kParamInPhs##i,fInPhs##i);\
@@ -253,7 +253,7 @@ protected:
                     editParameter(kParamInLvl##i, false);\
             }\
                 ImGui::SameLine();\
-                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0, ImGuiKnobFlags_NoTitle)) {\
+                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPan##i,true);\
                     setParameterValue(kParamInPan##i,fInPan##i);\
@@ -262,7 +262,7 @@ protected:
             {\
                     editParameter(kParamInPan##i, false);\
             }\
-                if(InfiniteKnob("Phs",&fPhs##i,-M_PI,M_PI,0.01f,20.f,0)){\
+                if(InfiniteKnob("Phs",&fPhs##i,-M_PI,M_PI,0.01f,0.f,0)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPhs##i,true);\
                     setParameterValue(kParamInPhs##i,fInPhs##i);\
@@ -332,6 +332,7 @@ protected:
             }
             getPluginDPSPointer()->activation.store(type,std::memory_order_relaxed);
             displayRows();
+            ImGui::Separator();
 
         }
         //if(!ImGui::IsMouseDown(ImGuiMouseButton_Left)) endDrag();
