@@ -11,9 +11,29 @@ X(0)   X(1)  X(2)  X(3)  //X(4)  \
     X(15) X(16)
 #define BIQUAD_COUNT 4
 
+
+#define DISCARD(...)
+
+#define Y_CHOOSE_0_0 ,DISCARD
+#define Y_CHOOSE_1_1 ,DISCARD
+#define Y_CHOOSE_2_2 ,DISCARD
+#define Y_CHOOSE_3_3 ,DISCARD
+
+
+#define Y_CHOOSE_MATCH_ALL(...) __VA_ARGS__
+
+#define Y_GET_MACRO_HELPER(macro, fallback, ...) fallback
+
+
+
+#define Y_EVAL_CHOICE(args) Y_GET_MACRO_HELPER args
+
+#define Y_GET_MACRO(i, j) Y_EVAL_CHOICE((Y_CHOOSE_##i##_##j, Y_CHOOSE_MATCH_ALL))
+
+#define Y_FINAL(i,j) Y_GET_MACRO(i,j)(Y_REAL(i,j))
+
 #define BIQUAD_INNER_LIST(r)\
-Y(r,0)  Y(r,1)  Y(r,2)  Y(r,3)
+Y_FINAL(r,0)  Y_FINAL(r,1)  Y_FINAL(r,2)  Y_FINAL(r,3)
 
 
-#undef X
 #endif // DEFINES_HPP

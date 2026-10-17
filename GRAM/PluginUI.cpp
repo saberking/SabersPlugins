@@ -29,13 +29,13 @@ class ImGuiPluginUI : public UI
     ResizeHandle fResizeHandle;
     bool needsNormalise=false;
 public:
-#define Y(i,j) CROSS_PARAM_DECL(i,j)
+#define Y_REAL(i,j) CROSS_PARAM_DECL(i,j)
 
 #define X(i) OUTER_PARAM_DECL(i)
 
     BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
     ImGuiPluginUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH,DISTRHO_UI_DEFAULT_HEIGHT),
         fResizeHandle(this)
@@ -117,11 +117,11 @@ public:
 
 protected:
     void parameterChanged(uint32_t index, float value) override {
-#define Y(i,j) SET_CROSS_PARAM(i,j)
+#define Y_REAL(i,j) SET_CROSS_PARAM(i,j)
 #define X(i) SET_PARAM(i)
         BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
         repaint();
     }
     void displayRows()

@@ -5,7 +5,7 @@
 
 START_NAMESPACE_DISTRHO
 enum Parameters {
-#define Y(i,j) kParamCrossLvl##i##j,kParamCrossPhs##i##j,kParamCrossPan##i##j,kParamCrossPOff##i##j,
+#define Y_REAL(i,j) kParamCrossLvl##i##j,kParamCrossPhs##i##j,kParamCrossPan##i##j,kParamCrossPOff##i##j,
 #define X(i) kParamInLvl##i, kParamInPhs##i, kParamInPan##i, kParamInPOff##i,\
     kParamPoleCentre##i, kParamDiscriminant##i,\
     BIQUAD_INNER_LIST(i)\
@@ -13,7 +13,7 @@ enum Parameters {
     kParamOutLvl##i, kParamOutPhs##i,
     BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
     kParamCount
 };
 

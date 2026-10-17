@@ -28,13 +28,12 @@ static const char* activationFunctionNames[]={
 
 class ImGuiPluginDSP : public Plugin
 {
-#define Y(i,j) CROSS_PARAM_DECL(i,j)
+#define Y_REAL(i,j) CROSS_PARAM_DECL(i,j)
 
 #define X(i) OUTER_PARAM_DECL(i)
 
     BIQUAD_LIST
 #undef X
-#undef Y
     bool consoleAttached=false;
     std::mt19937 gen;
     std::normal_distribution<float> d;
@@ -166,7 +165,7 @@ protected:
 
         BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
 
         std::cout<<"Finsihed calcultee"<<std::endl;
     }
@@ -264,7 +263,7 @@ protected:
     void initParameter(uint32_t index, Parameter& parameter) override
     {
         parameter.hints = kParameterIsAutomatable;
-#define Y(i,j) \
+#define Y_REAL(i,j) \
         if(index == kParamCrossLvl##i##j) { \
                 parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
                 parameter.name = "Biquad " #i  " CrossLvl" #j; \
@@ -354,12 +353,12 @@ protected:
         }
         BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
     }
 
     float getParameterValue(uint32_t index) const override
     {
-#define Y(i,j)\
+#define Y_REAL(i,j)\
         if(index == kParamCrossLvl##i##j) { \
                 return fCrossLvl##i##j; \
         } \
@@ -408,18 +407,18 @@ protected:
         }
         BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
         std::cout<<"ERRORRRRRR   "<<index<<std::endl;
     }
 
 
     void setParameterValue(uint32_t index, float value) override
     {
-#define Y(i,j) SET_CROSS_PARAM(i,j)
+#define Y_REAL(i,j) SET_CROSS_PARAM(i,j)
 #define X(i) SET_PARAM(i)
 BIQUAD_LIST
 #undef X
-#undef Y
+#undef Y_REAL
 
         std::cout<<"all set"<<std::endl;
         calculateMatrix();
