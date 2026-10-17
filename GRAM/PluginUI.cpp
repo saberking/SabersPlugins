@@ -298,7 +298,6 @@ protected:
             }
             getPluginDPSPointer()->activation.store(type,std::memory_order_relaxed);
             displayRows();
-            ImGui::Separator();
 
         }
         //if(!ImGui::IsMouseDown(ImGuiMouseButton_Left)) endDrag();
