@@ -163,14 +163,14 @@ protected:
             {\
                     editParameter(kParamInPan##i, false);\
             }\
-            if(InfiniteKnob("Phs",&fInPhs##i,-M_PI,M_PI,0.01f,0.f,0)){\
+            if(InfiniteKnob("Phs",&fInAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
                 if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPhs##i,true);\
-                setParameterValue(kParamInPhs##i,fInPhs##i);\
+                    editParameter(kParamInAngle##i,true);\
+                setParameterValue(kParamInAngle##i,fInAngle##i);\
             }\
             if (ImGui::IsItemDeactivated())\
             {\
-                editParameter(kParamInPhs##i, false);\
+                editParameter(kParamInAngle##i, false);\
             }\
             ImGui::SameLine();\
                 if(InfiniteKnob("POff",&fInPOff##i,-M_PI,M_PI)){\
@@ -227,14 +227,14 @@ protected:
             {\
                     editParameter(kParamOutPan##i, false);\
             }\
-                if(InfiniteKnob("Phs",&fOutPhs##i,-M_PI,M_PI,0.01f,0.f,0)){\
+                if(InfiniteKnob("Phs",&fOutAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamOutPhs##i,true);\
-                    setParameterValue(kParamOutPhs##i,fOutPhs##i);\
+                    editParameter(kParamOutAngle##i,true);\
+                    setParameterValue(kParamOutAngle##i,fOutAngle##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamOutPhs##i, false);\
+                    editParameter(kParamOutAngle##i, false);\
             }\
                 ImGui::SameLine();\
                 if(InfiniteKnob("POff",&fOutPOff##i,-M_PI,M_PI)){\

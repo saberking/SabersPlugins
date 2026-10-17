@@ -42,7 +42,9 @@ public:
 
     std::atomic<ActivationFunctionType> activation=activationFunctionClip;
 
-    Eigen::Array<std::complex<float>,BIQUAD_COUNT,1>state[MAX_DELAY+1], inL, inR, outL, outR, lambda;
+    Eigen::Array<float,BIQUAD_COUNT*2,1>state[MAX_DELAY+1];
+    Eigen::Array<float,BIQUAD_COUNT*2,1>    inL, inR, outL, outR;
+    Eigen::Array<float,BIQUAD_COUNT*2,BIQUAD_COUNT*2>weights;
 
     int inputBufferIndex=0;
     ImGuiPluginDSP()
@@ -144,24 +146,47 @@ protected:
         std::cout<<"calculate"<<std::endl;
 
         float panAngle;
-        std::complex<float> inLvl;
+        Eigen::Array<float,2,2> inMatrix, outMatrix;
+        Eigen::Rotation2Df rot2d;
+        weights.matrix().setZero();
 //pan: zero is 45 degrees, -M_PI/2 is zero degrees, M_PI/2 is 90 degrees
-//left magnitude is cos(pan), right is sin(pan) (0)
+//left magnitude is cos(pan), right is sin(pan)
 
 
 #define X(i) \
         \
         panAngle=M_PI/4.f+fInPan##i/2.f;\
         if(panAngle>M_PI/2||panAngle<0)std::cout<<"ERRORERRORREREOEREOR  "<<panAngle<<std::endl;\
-        inLvl=std::polar<float>(std::abs(fInLvl##i),fInLvl##i<0?fInPhs##i+M_PI:fInPhs##i);\
-        inL(i)=inLvl*std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fInPOff##i);\
-        inR(i)=inLvl*std::polar<float>(std::sin(std::max(panAngle,0.f)),fInPOff##i);\
-        lambda(i)=std::polar<float>(std::abs(fPoleCentre##i),fPoleCentre##i<0?fDiscriminant##i*M_PI/24000.f-M_PI:fDiscriminant##i*M_PI/24000.f);\
+        inMatrix.matrix().setIdentity();\
+        inMatrix*=fInLvl##i*sqrt(2);\
+        inMatrix.col(0)*=cos(panAngle);\
+        rot2d=Eigen::Rotation2D(fInAngle##i-fInPOff##i);\
+        inMatrix.col(0)=rot2d.toRotationMatrix()*inMatrix.col(1).matrix();\
+        inMatrix.col(1)*=sin(panAngle);\
+        rot2d=Eigen::Rotation2D(fInAngle##i+fInPOff##i);\
+        inMatrix.col(0)=rot2d.toRotationMatrix()*inMatrix.col(0).matrix();\
+        inL(2*i)=inMatrix(0,0);\
+        inL(2*i+1)=inMatrix(1,0);\
+        inR(2*i)=inMatrix(0,1);\
+        inR(2*i+1)=inMatrix(1,1);\
+        weights(2*i, 2*i)=2*fPoleCentre##i;\
+        weights(2*i,2*i+1)=-(fPoleCentre##i*fPoleCentre##i-fDiscriminant##i*fDiscriminant##i);\
+        weights(2*i+1,2*i)=1;\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
-        outL(i)=std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fOutPOff##i);\
-        outR(i)=std::polar<float>(std::sin(std::max(panAngle,0.f)),fOutPOff##i);\
-        outL(i)*=std::polar<float>(std::abs(fOutLvl##i),fOutLvl##i<0?fOutPhs##i+M_PI:fOutPhs##i);\
-        outR(i)*=std::polar<float>(std::abs(fOutLvl##i),fOutLvl##i<0?fOutPhs##i+M_PI:fOutPhs##i);
+        if(panAngle>M_PI/2||panAngle<0)std::cout<<"ERRORERRORREREOEREOR  "<<panAngle<<std::endl;\
+        outMatrix.matrix().setIdentity();\
+        outMatrix*=fOutLvl##i*sqrt(2);\
+        outMatrix.col(0)*=cos(panAngle);\
+        rot2d=Eigen::Rotation2D(fOutAngle##i-fOutPOff##i);\
+        outMatrix.col(0)=rot2d.toRotationMatrix()*outMatrix.col(1).matrix();\
+        outMatrix.col(1)*=sin(panAngle);\
+        rot2d=Eigen::Rotation2D(fOutAngle##i+fOutPOff##i);\
+        outMatrix.col(0)=rot2d.toRotationMatrix()*outMatrix.col(0).matrix();\
+        outL(2*i)=inMatrix(0,0);\
+            outL(2*i+1)=inMatrix(1,0);\
+            outR(2*i)=inMatrix(0,1);\
+            outR(2*i+1)=inMatrix(1,1);\
+
 
         BIQUAD_LIST
 #undef X
@@ -227,20 +252,18 @@ protected:
             time2+=getTimeInterval();
             state[inputBufferIndex]+=inL*inputs[0][sample]+inR*inputs[1][sample];
             time3+=getTimeInterval();
-            state[inputBufferIndex]*=lambda;
+            state[inputBufferIndex].matrix()=weights.matrix()*state[inputBufferIndex].matrix();
             time4+=getTimeInterval();
             if(activationFunction==activationFunctionClip)
             {
-                state[inputBufferIndex].real() = state[inputBufferIndex].real().cwiseMax(-1.0f).cwiseMin(1.0f);
-                state[inputBufferIndex].imag() = state[inputBufferIndex].imag().cwiseMax(-1.0f).cwiseMin(1.0f);
+                state[inputBufferIndex] = state[inputBufferIndex].cwiseMax(-1.0f).cwiseMin(1.0f);
             }
 
             if(activationFunction==activationFunctionTanh)
             {
                 for(int i=0;i<state[inputBufferIndex].size();i++)
                 {
-                    state[inputBufferIndex][i]=std::complex<float>(fastTanh(state[inputBufferIndex][i].real()),
-                                                    fastTanh(state[inputBufferIndex][i].imag()));
+                    state[inputBufferIndex][i]=fastTanh(state[inputBufferIndex][i]);
                 }
 
             }
@@ -296,9 +319,9 @@ protected:
                 parameter.symbol = "biquad_" #i "_in_lvl"; \
                 return; \
         } \
-            if(index == kParamInPhs##i) { \
+            if(index == kParamInAngle##i) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " InPhs"; \
+                parameter.name = "Biquad " #i " InAngle"; \
                 parameter.symbol = "biquad_" #i "_in_phs"; \
                 return; \
         } \
@@ -345,9 +368,9 @@ protected:
                 parameter.symbol = "biquad_" #i "_out_lvl"; \
                 return; \
         } \
-            if(index == kParamOutPhs##i) { \
+            if(index == kParamOutAngle##i) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " OutPhs"; \
+                parameter.name = "Biquad " #i " OutAngle"; \
                 parameter.symbol = "biquad_" #i "_out_phs"; \
                 return; \
         }
@@ -377,8 +400,8 @@ protected:
         if(index == kParamInLvl##i) { \
                 return fInLvl##i; \
         } \
-            if(index==kParamInPhs##i){\
-                return fInPhs##i;\
+            if(index==kParamInAngle##i){\
+                return fInAngle##i;\
         }\
         if(index == kParamInPan##i) { \
                 return fInPan##i; \
@@ -402,8 +425,8 @@ protected:
             if(index==kParamOutLvl##i){\
                 return fOutLvl##i;\
         }\
-            if(index==kParamOutPhs##i){\
-                return fOutPhs##i;\
+            if(index==kParamOutAngle##i){\
+                return fOutAngle##i;\
         }
         BIQUAD_LIST
 #undef X

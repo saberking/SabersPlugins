@@ -6,11 +6,11 @@
 START_NAMESPACE_DISTRHO
 enum Parameters {
 #define Y_REAL(i,j) kParamCrossLvl##i##j,kParamCrossPhs##i##j,kParamCrossPan##i##j,kParamCrossPOff##i##j,
-#define X(i) kParamInLvl##i, kParamInPhs##i, kParamInPan##i, kParamInPOff##i,\
+#define X(i) kParamInLvl##i, kParamInAngle##i, kParamInPan##i, kParamInPOff##i,\
     kParamPoleCentre##i, kParamDiscriminant##i,\
     BIQUAD_INNER_LIST(i)\
     kParamOutPan##i, kParamOutPOff##i, \
-    kParamOutLvl##i, kParamOutPhs##i,
+    kParamOutLvl##i, kParamOutAngle##i,
     BIQUAD_LIST
 #undef X
 #undef Y_REAL
@@ -19,7 +19,7 @@ enum Parameters {
 
 #define OUTER_PARAM_DECL(i)\
 float fInLvl##i=0.0f;\
-    float fInPhs##i=0.0f;\
+    float fInAngle##i=0.0f;\
     float fInPan##i=0.0f;\
     float fInPOff##i=0.f;\
     float fPoleCentre##i=0.f;\
@@ -28,7 +28,7 @@ float fInLvl##i=0.0f;\
     float fOutPan##i=0.f;\
     float fOutPOff##i=0.f;\
     float fOutLvl##i=1.f/25.f;\
-    float fOutPhs##i=0.f;
+    float fOutAngle##i=0.f;
 
 #define CROSS_PARAM_DECL(i,j)\
 float fCrossLvl##i##j=0.f, fCrossPan##i##j=0.f,fCrossPhs##i##j=0.f,fCrossPOff##i##j=0.f;
@@ -50,8 +50,8 @@ if(index == kParamCrossLvl##i##j) { \
 if(index==kParamInLvl##i){\
         fInLvl##i=value;\
 }\
-    if(index==kParamInPhs##i){\
-        fInPhs##i=value;\
+    if(index==kParamInAngle##i){\
+        fInAngle##i=value;\
 }\
     if(index==kParamInPan##i){\
         fInPan##i=value;\
@@ -75,8 +75,8 @@ if(index==kParamInLvl##i){\
     if(index==kParamOutLvl##i){\
         fOutLvl##i=value;\
 }\
-    if(index==kParamOutPhs##i){\
-        fOutPhs##i=value;\
+    if(index==kParamOutAngle##i){\
+        fOutAngle##i=value;\
 }
 
 
