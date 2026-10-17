@@ -28,20 +28,13 @@ static const char* activationFunctionNames[]={
 
 class ImGuiPluginDSP : public Plugin
 {
-#define X(i) \
-    float fInLvl##i=0.0f;\
-    float fInPhs##i=0.0f;\
-    float fInPan##i=0.0f;\
-    float fInPOff##i=0.f;\
-    float fFeed##i=0.f;\
-    float fFreq##i=0.f;\
-    float fOutPan##i=0.f;\
-    float fOutPOff##i=0.f;\
-    float fLvl##i=1.f/25.f;\
-    float fPhs##i=0.f;
+#define Y(i,j) CROSS_PARAM_DECL(i,j)
+
+#define X(i) OUTER_PARAM_DECL(i)
 
     BIQUAD_LIST
 #undef X
+#undef Y
     bool consoleAttached=false;
     std::mt19937 gen;
     std::normal_distribution<float> d;
@@ -164,15 +157,16 @@ protected:
         inLvl=std::polar<float>(std::abs(fInLvl##i),fInLvl##i<0?fInPhs##i+M_PI:fInPhs##i);\
         inL(i)=inLvl*std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fInPOff##i);\
         inR(i)=inLvl*std::polar<float>(std::sin(std::max(panAngle,0.f)),fInPOff##i);\
-        lambda(i)=std::polar<float>(std::abs(fFeed##i),fFeed##i<0?fFreq##i*M_PI/24000.f-M_PI:fFreq##i*M_PI/24000.f);\
+        lambda(i)=std::polar<float>(std::abs(fPoleCentre##i),fPoleCentre##i<0?fDiscriminant##i*M_PI/24000.f-M_PI:fDiscriminant##i*M_PI/24000.f);\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outL(i)=std::polar<float>(std::cos(std::min(panAngle,(float)M_PI/2-0.001f)),-fOutPOff##i);\
         outR(i)=std::polar<float>(std::sin(std::max(panAngle,0.f)),fOutPOff##i);\
-        outL(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);\
-        outR(i)*=std::polar<float>(std::abs(fLvl##i),fLvl##i<0?fPhs##i+M_PI:fPhs##i);
+        outL(i)*=std::polar<float>(std::abs(fOutLvl##i),fOutLvl##i<0?fOutPhs##i+M_PI:fOutPhs##i);\
+        outR(i)*=std::polar<float>(std::abs(fOutLvl##i),fOutLvl##i<0?fOutPhs##i+M_PI:fOutPhs##i);
 
         BIQUAD_LIST
 #undef X
+#undef Y
 
         std::cout<<"Finsihed calcultee"<<std::endl;
     }
@@ -270,6 +264,31 @@ protected:
     void initParameter(uint32_t index, Parameter& parameter) override
     {
         parameter.hints = kParameterIsAutomatable;
+#define Y(i,j) \
+        if(index == kParamCrossLvl##i##j) { \
+                parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
+                parameter.name = "Biquad " #i  " CrossLvl" #j; \
+                parameter.symbol = "biquad_" #i"_Cross_lvl"  #j ; \
+                return; \
+        } \
+            if(index == kParamCrossPhs##i##j) { \
+                parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
+                parameter.name = "Biquad " #i " CrossPhs" #j; \
+                parameter.symbol = "biquad_" #i "_Cross_phs" #j; \
+                return; \
+        } \
+            if(index == kParamCrossPan##i##j) { \
+                parameter.ranges = ParameterRanges(0.f, -M_PI/2, M_PI/2); \
+                parameter.name = "Biquad " #i " CrossPan"  #j; \
+                parameter.symbol = "biquad_" #i "_Cross_pan"  #j; \
+                return; \
+        } \
+            if(index == kParamCrossPOff##i##j) { \
+                parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
+                parameter.name = "Biquad " #i " CrossPOff"  #j; \
+                parameter.symbol = "biquad_" #i "_Cross_p_off"  #j; \
+                return; \
+        }
 
 #define X(i) \
         if(index == kParamInLvl##i) { \
@@ -296,18 +315,19 @@ protected:
                 parameter.symbol = "biquad_" #i "_in_p_off"; \
                 return; \
         } \
-            if(index == kParamFeed##i) { \
+            if(index == kParamPoleCentre##i) { \
                 parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
                 parameter.name = "Biquad " #i " Feed"; \
                 parameter.symbol = "biquad_" #i "_feed"; \
                 return; \
         } \
-            if(index == kParamFreq##i) { \
+            if(index == kParamDiscriminant##i) { \
                 parameter.ranges = ParameterRanges(0.f, -24000.f, 24000.f); \
                 parameter.name = "Biquad " #i " Freq"; \
                 parameter.symbol = "biquad_" #i "_freq"; \
                 return; \
         }\
+        BIQUAD_INNER_LIST(i)\
         if(index == kParamOutPan##i) { \
         parameter.ranges = ParameterRanges(0.f, -M_PI/2, M_PI/2); \
                 parameter.name = "Biquad " #i " OutPan"; \
@@ -320,24 +340,39 @@ protected:
                 parameter.symbol = "biquad_" #i "_out_p_off"; \
                 return; \
         } \
-            if(index == kParamLvl##i) { \
+            if(index == kParamOutLvl##i) { \
                 parameter.ranges = ParameterRanges(1.f/25.f, -1.f, 1.f); \
-                parameter.name = "Biquad " #i " Lvl"; \
-                parameter.symbol = "biquad_" #i "_lvl"; \
+                parameter.name = "Biquad " #i " OutLvl"; \
+                parameter.symbol = "biquad_" #i "_out_lvl"; \
                 return; \
         } \
-            if(index == kParamPhs##i) { \
+            if(index == kParamOutPhs##i) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " Phs"; \
-                parameter.symbol = "biquad_" #i "_phs"; \
+                parameter.name = "Biquad " #i " OutPhs"; \
+                parameter.symbol = "biquad_" #i "_out_phs"; \
                 return; \
         }
         BIQUAD_LIST
 #undef X
+#undef Y
     }
 
     float getParameterValue(uint32_t index) const override
     {
+#define Y(i,j)\
+        if(index == kParamCrossLvl##i##j) { \
+                return fCrossLvl##i##j; \
+        } \
+            if(index==kParamCrossPhs##i##j){\
+                return fCrossPhs##i##j;\
+        }\
+            if(index == kParamCrossPan##i##j) { \
+                return fCrossPan##i##j; \
+        } \
+            if(index==kParamCrossPOff##i##j){\
+                return fCrossPOff##i##j;\
+        }
+
 
 #define X(i) \
         if(index == kParamInLvl##i) { \
@@ -352,68 +387,39 @@ protected:
         if(index==kParamInPOff##i){\
             return fInPOff##i;\
         }\
-        if(index==kParamFeed##i){\
-            return fFeed##i;\
+        if(index==kParamPoleCentre##i){\
+            return fPoleCentre##i;\
         }\
-        if(index==kParamFreq##i){\
-            return fFreq##i;\
+        if(index==kParamDiscriminant##i){\
+            return fDiscriminant##i;\
         }\
+        BIQUAD_INNER_LIST(i)\
         if(index == kParamOutPan##i) { \
                 return fOutPan##i; \
         } \
             if(index==kParamOutPOff##i){\
                 return fOutPOff##i;\
         }\
-            if(index==kParamLvl##i){\
-                return fLvl##i;\
+            if(index==kParamOutLvl##i){\
+                return fOutLvl##i;\
         }\
-            if(index==kParamPhs##i){\
-                return fPhs##i;\
+            if(index==kParamOutPhs##i){\
+                return fOutPhs##i;\
         }
         BIQUAD_LIST
 #undef X
-
+#undef Y
         std::cout<<"ERRORRRRRR   "<<index<<std::endl;
     }
 
 
     void setParameterValue(uint32_t index, float value) override
     {
-        #define X(i) \
-        if(index==kParamInLvl##i){\
-                fInLvl##i=value;\
-        }\
-            if(index==kParamInPhs##i){\
-                fInPhs##i=value;\
-        }\
-        if(index==kParamInPan##i){\
-            fInPan##i=value;\
-        }\
-        if(index==kParamInPOff##i){\
-            fInPOff##i=value;\
-        }\
-        if(index==kParamFeed##i){\
-            fFeed##i=value;\
-        }\
-        if(index==kParamFreq##i){\
-            fFreq##i=value;\
-        }\
-        if(index==kParamOutPan##i){\
-                fOutPan##i=value;\
-        }\
-            if(index==kParamOutPOff##i){\
-                fOutPOff##i=value;\
-        }\
-            if(index==kParamLvl##i){\
-                fLvl##i=value;\
-        }\
-            if(index==kParamPhs##i){\
-                fPhs##i=value;\
-        }
-
-        BIQUAD_LIST
+#define Y(i,j) SET_CROSS_PARAM(i,j)
+#define X(i) SET_PARAM(i)
+BIQUAD_LIST
 #undef X
-
+#undef Y
 
         std::cout<<"all set"<<std::endl;
         calculateMatrix();
