@@ -154,7 +154,7 @@ protected:
                 editParameter(kParamInLvl##i, false);\
             }\
             ImGui::SameLine();\
-            if (ImGuiKnobs::Knob("Pan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0)) {\
+            if (ImGuiKnobs::Knob("Pan", &fInPan##i, -M_PI/2, M_PI/2, 0.01f, "%.3f", ImGuiKnobVariant_Stepped, 0)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInPan##i,true);\
                     setParameterValue(kParamInPan##i,fInPan##i);\
@@ -218,7 +218,7 @@ protected:
                     editParameter(kParamOutLvl##i, false);\
             }\
                 ImGui::SameLine();\
-                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.1f", ImGuiKnobVariant_Stepped, 0)) {\
+                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.3f", ImGuiKnobVariant_Stepped, 0)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamOutPan##i,true);\
                     setParameterValue(kParamOutPan##i,fOutPan##i);\
