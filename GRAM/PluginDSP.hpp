@@ -156,14 +156,15 @@ protected:
 #define X(i) \
         \
         panAngle=M_PI/4.f+fInPan##i/2.f;\
-        inMatrix.matrix().setIdentity();\
+        inMatrix.matrix().setZero();\
+        inMatrix(0,0)=inMatrix(0,1)=1;\
         inMatrix*=fInLvl##i*sqrt(2);\
         inMatrix.col(0)*=cos(panAngle);\
         rot2d=Eigen::Rotation2D(fInAngle##i-fInAngleOffset##i);\
-        inMatrix.col(0)=rot2d.toRotationMatrix()*inMatrix.col(0).matrix();\
+        inMatrix.col(0).matrix()=rot2d.toRotationMatrix()*inMatrix.col(0).matrix();\
         inMatrix.col(1)*=sin(panAngle);\
         rot2d=Eigen::Rotation2D(fInAngle##i+fInAngleOffset##i);\
-        inMatrix.col(1)=rot2d.toRotationMatrix()*inMatrix.col(1).matrix();\
+        inMatrix.col(1).matrix()=rot2d.toRotationMatrix()*inMatrix.col(1).matrix();\
         inL(2*i)=inMatrix(0,0);\
         inL(2*i+1)=inMatrix(1,0);\
         inR(2*i)=inMatrix(0,1);\
@@ -172,14 +173,15 @@ protected:
         weights(2*i,2*i+1)=-(fPoleCentre##i*fPoleCentre##i-fDiscriminant##i*fDiscriminant##i);\
         weights(2*i+1,2*i)=1;\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
-        outMatrix.matrix().setIdentity();\
+        outMatrix.matrix().setZero();\
+        outMatrix(0,0)=outMatrix(0,1)=1;\
         outMatrix*=fOutLvl##i*sqrt(2);\
         outMatrix.col(0)*=cos(panAngle);\
         rot2d=Eigen::Rotation2D(fOutAngle##i-fOutAngleOffset##i);\
-        outMatrix.col(0)=rot2d.toRotationMatrix()*outMatrix.col(0).matrix();\
+        outMatrix.col(0).matrix()=rot2d.toRotationMatrix()*outMatrix.col(0).matrix();\
         outMatrix.col(1)*=sin(panAngle);\
         rot2d=Eigen::Rotation2D(fOutAngle##i+fOutAngleOffset##i);\
-        outMatrix.col(1)=rot2d.toRotationMatrix()*outMatrix.col(1).matrix();\
+        outMatrix.col(1).matrix()=rot2d.toRotationMatrix()*outMatrix.col(1).matrix();\
         outL(2*i)=outMatrix(0,0);\
             outL(2*i+1)=outMatrix(1,0);\
             outR(2*i)=outMatrix(0,1);\
