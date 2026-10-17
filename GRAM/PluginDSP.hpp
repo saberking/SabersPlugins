@@ -160,10 +160,10 @@ protected:
         inMatrix.matrix().setIdentity();\
         inMatrix*=fInLvl##i*sqrt(2);\
         inMatrix.col(0)*=cos(panAngle);\
-        rot2d=Eigen::Rotation2D(fInAngle##i-fInPOff##i);\
+        rot2d=Eigen::Rotation2D(fInAngle##i-fInAngleOffset##i);\
         inMatrix.col(0)=rot2d.toRotationMatrix()*inMatrix.col(1).matrix();\
         inMatrix.col(1)*=sin(panAngle);\
-        rot2d=Eigen::Rotation2D(fInAngle##i+fInPOff##i);\
+        rot2d=Eigen::Rotation2D(fInAngle##i+fInAngleOffset##i);\
         inMatrix.col(0)=rot2d.toRotationMatrix()*inMatrix.col(0).matrix();\
         inL(2*i)=inMatrix(0,0);\
         inL(2*i+1)=inMatrix(1,0);\
@@ -177,10 +177,10 @@ protected:
         outMatrix.matrix().setIdentity();\
         outMatrix*=fOutLvl##i*sqrt(2);\
         outMatrix.col(0)*=cos(panAngle);\
-        rot2d=Eigen::Rotation2D(fOutAngle##i-fOutPOff##i);\
+        rot2d=Eigen::Rotation2D(fOutAngle##i-fOutAngleOffset##i);\
         outMatrix.col(0)=rot2d.toRotationMatrix()*outMatrix.col(1).matrix();\
         outMatrix.col(1)*=sin(panAngle);\
-        rot2d=Eigen::Rotation2D(fOutAngle##i+fOutPOff##i);\
+        rot2d=Eigen::Rotation2D(fOutAngle##i+fOutAngleOffset##i);\
         outMatrix.col(0)=rot2d.toRotationMatrix()*outMatrix.col(0).matrix();\
         outL(2*i)=inMatrix(0,0);\
             outL(2*i+1)=inMatrix(1,0);\
@@ -293,9 +293,9 @@ protected:
                 parameter.symbol = "biquad_" #i"_Cross_lvl"  #j ; \
                 return; \
         } \
-            if(index == kParamCrossPhs##i##j) { \
+            if(index == kParamCrossAngle##i##j) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " CrossPhs" #j; \
+                parameter.name = "Biquad " #i " CrossAngle" #j; \
                 parameter.symbol = "biquad_" #i "_Cross_phs" #j; \
                 return; \
         } \
@@ -305,10 +305,10 @@ protected:
                 parameter.symbol = "biquad_" #i "_Cross_pan"  #j; \
                 return; \
         } \
-            if(index == kParamCrossPOff##i##j) { \
+            if(index == kParamCrossAngleOffset##i##j) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " CrossPOff"  #j; \
-                parameter.symbol = "biquad_" #i "_Cross_p_off"  #j; \
+                parameter.name = "Biquad " #i " CrossAngleOffset"  #j; \
+                parameter.symbol = "biquad_" #i "_Cross_angle_off"  #j; \
                 return; \
         }
 
@@ -331,22 +331,22 @@ protected:
                 parameter.symbol = "biquad_" #i "_in_pan"; \
                 return; \
         } \
-            if(index == kParamInPOff##i) { \
+            if(index == kParamInAngleOffset##i) { \
                 parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " InPOff"; \
-                parameter.symbol = "biquad_" #i "_in_p_off"; \
+                parameter.name = "Biquad " #i " InAngleOffset"; \
+                parameter.symbol = "biquad_" #i "_in_angle_off"; \
                 return; \
         } \
             if(index == kParamPoleCentre##i) { \
                 parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
-                parameter.name = "Biquad " #i " Feed"; \
-                parameter.symbol = "biquad_" #i "_feed"; \
+                parameter.name = "Biquad " #i " PoleCentre"; \
+                parameter.symbol = "biquad_" #i "_pole_centre"; \
                 return; \
         } \
             if(index == kParamDiscriminant##i) { \
                 parameter.ranges = ParameterRanges(0.f, -24000.f, 24000.f); \
-                parameter.name = "Biquad " #i " Freq"; \
-                parameter.symbol = "biquad_" #i "_freq"; \
+                parameter.name = "Biquad " #i " Discriminant"; \
+                parameter.symbol = "biquad_" #i "_discriminant"; \
                 return; \
         }\
         BIQUAD_INNER_LIST(i)\
@@ -356,10 +356,10 @@ protected:
                 parameter.symbol = "biquad_" #i "_out_pan"; \
                 return; \
         } \
-            if(index == kParamOutPOff##i) { \
+            if(index == kParamOutAngleOffset##i) { \
         parameter.ranges = ParameterRanges(0.f, -M_PI, M_PI); \
-                parameter.name = "Biquad " #i " OutPOff"; \
-                parameter.symbol = "biquad_" #i "_out_p_off"; \
+                parameter.name = "Biquad " #i " OutAngleOffset"; \
+                parameter.symbol = "biquad_" #i "_out_angle_off"; \
                 return; \
         } \
             if(index == kParamOutLvl##i) { \
@@ -385,14 +385,14 @@ protected:
         if(index == kParamCrossLvl##i##j) { \
                 return fCrossLvl##i##j; \
         } \
-            if(index==kParamCrossPhs##i##j){\
-                return fCrossPhs##i##j;\
+            if(index==kParamCrossAngle##i##j){\
+                return fCrossAngle##i##j;\
         }\
             if(index == kParamCrossPan##i##j) { \
                 return fCrossPan##i##j; \
         } \
-            if(index==kParamCrossPOff##i##j){\
-                return fCrossPOff##i##j;\
+            if(index==kParamCrossAngleOffset##i##j){\
+                return fCrossAngleOffset##i##j;\
         }
 
 
@@ -406,8 +406,8 @@ protected:
         if(index == kParamInPan##i) { \
                 return fInPan##i; \
         } \
-        if(index==kParamInPOff##i){\
-            return fInPOff##i;\
+        if(index==kParamInAngleOffset##i){\
+            return fInAngleOffset##i;\
         }\
         if(index==kParamPoleCentre##i){\
             return fPoleCentre##i;\
@@ -419,8 +419,8 @@ protected:
         if(index == kParamOutPan##i) { \
                 return fOutPan##i; \
         } \
-            if(index==kParamOutPOff##i){\
-                return fOutPOff##i;\
+            if(index==kParamOutAngleOffset##i){\
+                return fOutAngleOffset##i;\
         }\
             if(index==kParamOutLvl##i){\
                 return fOutLvl##i;\

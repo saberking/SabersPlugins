@@ -5,11 +5,11 @@
 
 START_NAMESPACE_DISTRHO
 enum Parameters {
-#define Y_REAL(i,j) kParamCrossLvl##i##j,kParamCrossPhs##i##j,kParamCrossPan##i##j,kParamCrossPOff##i##j,
-#define X(i) kParamInLvl##i, kParamInAngle##i, kParamInPan##i, kParamInPOff##i,\
+#define Y_REAL(i,j) kParamCrossLvl##i##j,kParamCrossAngle##i##j,kParamCrossPan##i##j,kParamCrossAngleOffset##i##j,
+#define X(i) kParamInLvl##i, kParamInAngle##i, kParamInPan##i, kParamInAngleOffset##i,\
     kParamPoleCentre##i, kParamDiscriminant##i,\
     BIQUAD_INNER_LIST(i)\
-    kParamOutPan##i, kParamOutPOff##i, \
+    kParamOutPan##i, kParamOutAngleOffset##i, \
     kParamOutLvl##i, kParamOutAngle##i,
     BIQUAD_LIST
 #undef X
@@ -21,30 +21,30 @@ enum Parameters {
 float fInLvl##i=0.0f;\
     float fInAngle##i=0.0f;\
     float fInPan##i=0.0f;\
-    float fInPOff##i=0.f;\
+    float fInAngleOffset##i=0.f;\
     float fPoleCentre##i=0.f;\
     float fDiscriminant##i=0.f;\
     BIQUAD_INNER_LIST(i)\
     float fOutPan##i=0.f;\
-    float fOutPOff##i=0.f;\
+    float fOutAngleOffset##i=0.f;\
     float fOutLvl##i=1.f/25.f;\
     float fOutAngle##i=0.f;
 
 #define CROSS_PARAM_DECL(i,j)\
-float fCrossLvl##i##j=0.f, fCrossPan##i##j=0.f,fCrossPhs##i##j=0.f,fCrossPOff##i##j=0.f;
+float fCrossLvl##i##j=0.f, fCrossPan##i##j=0.f,fCrossAngle##i##j=0.f,fCrossAngleOffset##i##j=0.f;
 
 #define SET_CROSS_PARAM(i,j)\
 if(index == kParamCrossLvl##i##j) { \
         fCrossLvl##i##j=value; \
 } \
-    if(index==kParamCrossPhs##i##j){\
-        fCrossPhs##i##j=value;\
+    if(index==kParamCrossAngle##i##j){\
+        fCrossAngle##i##j=value;\
 }\
     if(index == kParamCrossPan##i##j) { \
         fCrossPan##i##j=value; \
 } \
-    if(index==kParamCrossPOff##i##j){\
-        fCrossPOff##i##j=value;\
+    if(index==kParamCrossAngleOffset##i##j){\
+        fCrossAngleOffset##i##j=value;\
 }
 #define SET_PARAM(i) \
 if(index==kParamInLvl##i){\
@@ -56,8 +56,8 @@ if(index==kParamInLvl##i){\
     if(index==kParamInPan##i){\
         fInPan##i=value;\
 }\
-    if(index==kParamInPOff##i){\
-        fInPOff##i=value;\
+    if(index==kParamInAngleOffset##i){\
+        fInAngleOffset##i=value;\
 }\
     if(index==kParamPoleCentre##i){\
         fPoleCentre##i=value;\
@@ -69,8 +69,8 @@ if(index==kParamInLvl##i){\
     if(index==kParamOutPan##i){\
         fOutPan##i=value;\
 }\
-    if(index==kParamOutPOff##i){\
-        fOutPOff##i=value;\
+    if(index==kParamOutAngleOffset##i){\
+        fOutAngleOffset##i=value;\
 }\
     if(index==kParamOutLvl##i){\
         fOutLvl##i=value;\

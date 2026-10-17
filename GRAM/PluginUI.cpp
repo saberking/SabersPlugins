@@ -133,10 +133,10 @@ protected:
             ImGui::Text("Input");
             ImGui::Separator();
             ImGui::TableNextColumn();
-            ImGui::Text("Eval");
+            ImGui::Text("Poles");
             ImGui::Separator();
             ImGui::TableNextColumn();
-            ImGui::Text("GRAM");
+            ImGui::Text("Crossfeed");
             ImGui::Separator();
             ImGui::TableNextColumn();
             ImGui::Text("Output");
@@ -163,7 +163,7 @@ protected:
             {\
                     editParameter(kParamInPan##i, false);\
             }\
-            if(InfiniteKnob("Phs",&fInAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
+            if(InfiniteKnob("Angle",&fInAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
                 if(ImGui::IsItemActivated())\
                     editParameter(kParamInAngle##i,true);\
                 setParameterValue(kParamInAngle##i,fInAngle##i);\
@@ -173,19 +173,19 @@ protected:
                 editParameter(kParamInAngle##i, false);\
             }\
             ImGui::SameLine();\
-                if(InfiniteKnob("POff",&fInPOff##i,-M_PI,M_PI)){\
+                if(InfiniteKnob("AngleOffset",&fInAngleOffset##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamInPOff##i,true);\
-                    setParameterValue(kParamInPOff##i,fInPOff##i);\
+                    editParameter(kParamInAngleOffset##i,true);\
+                    setParameterValue(kParamInAngleOffset##i,fInAngleOffset##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamInPOff##i, false);\
+                    editParameter(kParamInAngleOffset##i, false);\
             }\
             ImGui::Separator();\
             \
             ImGui::TableNextColumn();\
-                if (ImGuiKnobs::Knob("Feed", &fPoleCentre##i, -1.f, 1.0f)) {\
+                if (ImGuiKnobs::Knob("Centre", &fPoleCentre##i, -1.f, 1.0f)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamPoleCentre##i,true);\
                     setParameterValue(kParamPoleCentre##i,fPoleCentre##i);\
@@ -194,7 +194,7 @@ protected:
             {\
                     editParameter(kParamPoleCentre##i, false);\
             }\
-                if(InfiniteKnob("Freq",&fDiscriminant##i,-24000,24000)){\
+                if(InfiniteKnob("Discriminant",&fDiscriminant##i,-1.f,1.f)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamDiscriminant##i,true);\
                     setParameterValue(kParamDiscriminant##i,fDiscriminant##i);\
@@ -227,7 +227,7 @@ protected:
             {\
                     editParameter(kParamOutPan##i, false);\
             }\
-                if(InfiniteKnob("Phs",&fOutAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
+                if(InfiniteKnob("Angle",&fOutAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamOutAngle##i,true);\
                     setParameterValue(kParamOutAngle##i,fOutAngle##i);\
@@ -237,14 +237,14 @@ protected:
                     editParameter(kParamOutAngle##i, false);\
             }\
                 ImGui::SameLine();\
-                if(InfiniteKnob("POff",&fOutPOff##i,-M_PI,M_PI)){\
+                if(InfiniteKnob("AngleOffset",&fOutAngleOffset##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamOutPOff##i,true);\
-                    setParameterValue(kParamOutPOff##i,fOutPOff##i);\
+                    editParameter(kParamOutAngleOffset##i,true);\
+                    setParameterValue(kParamOutAngleOffset##i,fOutAngleOffset##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamOutPOff##i, false);\
+                    editParameter(kParamOutAngleOffset##i, false);\
             }\
             ImGui::Separator();\
             ImGui::PopID();
