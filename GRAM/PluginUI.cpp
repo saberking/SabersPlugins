@@ -141,53 +141,109 @@ protected:
     }
 
     void calcZeroPosKnobAngle(int i){
-        float angle, c, d;
+        float inAngle, outAngle, c, d, zeroAngle;
 #define X(j)\
         if(j==i){\
                 c=fFeed##j*cos(fFreq##j*M_PI/24000.f);\
                 d=-4.f*fFeed##j*fFeed##j*sin(fFreq##j*M_PI/24000.f)*sin(fFreq##j*M_PI/24000.f);\
-        angle=fOutAngle##j/*+fInAngle##j*/;\
+        outAngle=fOutAngle##j;\
+        inAngle=fInAngle##j;\
         }
 
         BIQUAD_LIST
 #undef X
-        float denominator=sin(angle);
-        if(denominator==0.f){
-            zeroPosKnobAngle[i]=M_PI;
+        float g=-(c*c-d/4);
+        if(inAngle==M_PI/2||inAngle==-M_PI/2)
+        {
+            if(outAngle==M_PI/2||outAngle==-M_PI/2){
+                if(c==0.f){
+                    zeroAngle=M_PI;
+                }else{
+                    zeroAngle=2*atan(-g/(2*c));
+                }
+            }else{
+                float denominator=g+2*c*tan(outAngle);
+                if(denominator==0){
+                    zeroAngle=M_PI;
+                }else{
+                    zeroAngle=2*atan(-g*tan(outAngle)/denominator);
+                }
+            }
         }else{
-            float zero=(c*c-d*0.25f)*cos(angle)/sin(angle);
-            zeroPosKnobAngle[i]=2*atan(zero);
+            if(outAngle==M_PI/2||outAngle==-M_PI/2){
+                float denominator=1+2*c*tan(inAngle);
+                if(denominator==0){
+                    zeroAngle=M_PI;
+                }else{
+                    zeroAngle=2*atan(-g*tan(inAngle)/denominator);
+                }
+            }else{
+                float denominator=g*tan(inAngle)+tan(outAngle)+2*c*tan(inAngle)*tan(outAngle);
+                if(denominator==0){
+                    zeroAngle=M_PI;
+                }else{
+                    zeroAngle=2*atan(-g*(1+tan(inAngle)*tan(outAngle))/denominator);
+                }
+            }
         }
+        zeroPosKnobAngle[i]=zeroAngle;
     }
 
     void calcOutAngle(int i){
-        float angle, c, d;
+        float inAngle, outAngle, c, d;
 #define X(j)\
         if(j==i){\
          c=fFeed##j*cos(fFreq##j*M_PI/24000.f);\
              d=-4.f*fFeed##j*fFeed##j*sin(fFreq##j*M_PI/24000.f)*sin(fFreq##j*M_PI/24000.f);\
+        inAngle=fInAngle##j;\
         }
 
         BIQUAD_LIST
 #undef X
-        if(zeroPosKnobAngle[i]==0.f){
-            angle=M_PI/2;
-        }else{
-            if(zeroPosKnobAngle[i]==M_PI||zeroPosKnobAngle[i]==-M_PI){
-                angle=0;
+        float g=-(c*c-d/4);
+
+        if(zeroPosKnobAngle[i]==M_PI||zeroPosKnobAngle[i]==-M_PI){
+            if(inAngle==M_PI/2||inAngle==-M_PI/2){
+                if(c==0){
+                    outAngle=M_PI/2;
+                }else{
+                    outAngle=atan(-g/(2*c));
+                }
             }else{
-                float cotanArgument=tan(0.5*zeroPosKnobAngle[i])/(c*c-d*0.25f);
-                angle=atan(1.f/cotanArgument);
+                float denominator=2*c*tan(inAngle)+1;
+                if(denominator==0){
+                    outAngle=M_PI/2;
+                }else{
+                    outAngle=atan(-g*tan(inAngle)/denominator);
+                }
+            }
+        }else{
+            float zero=tan(0.5*zeroPosKnobAngle[i]);
+            if(inAngle==M_PI/2||inAngle==-M_PI/2){
+                float denominator=2*c*zero+g;
+                if(denominator==0){
+                    outAngle=M_PI/2;
+                }else{
+                    outAngle=atan(-g*zero/denominator);
+                }
+            }else{
+                float denominator=zero+(2*c*zero+g)*tan(inAngle);
+                if(denominator==0){
+                    outAngle=M_PI/2;
+                }else{
+                    outAngle=atan(-g*(1+zero*tan(inAngle))/denominator);
+                }
             }
         }
+
 #define X(j)\
         if(j==i){\
             /*angle=angle-fInAngle##j;*/\
-            while(angle-fOutAngle##j>M_PI/2)angle-=M_PI;\
-            while(fOutAngle##j-angle>M_PI/2)angle+=M_PI;\
-        while(angle>M_PI)angle-=2*M_PI;\
-        while(angle<=-M_PI)angle+=2*M_PI;\
-            fOutAngle##j=angle;\
+            while(outAngle-fOutAngle##j>M_PI/2)outAngle-=M_PI;\
+            while(fOutAngle##j-outAngle>M_PI/2)outAngle+=M_PI;\
+        while(outAngle>M_PI)outAngle-=2*M_PI;\
+        while(outAngle<=-M_PI)outAngle+=2*M_PI;\
+            fOutAngle##j=outAngle;\
             editParameter(kParamOutAngle##j,true);\
             setParameterValue(kParamOutAngle##j,fOutAngle##j);\
             editParameter(kParamOutAngle##j, false);\
