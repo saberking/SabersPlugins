@@ -36,6 +36,8 @@ public:
     BIQUAD_LIST
 #undef X
 #undef Y_REAL
+
+    float zeroPosKnobAngle[BIQUAD_COUNT];
     ImGuiPluginUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH,DISTRHO_UI_DEFAULT_HEIGHT),
         fResizeHandle(this)
@@ -49,6 +51,10 @@ public:
             fResizeHandle.hide();
 
         std::cout<<"finished ui cosntructor"<<std::endl;
+#define X(i)\
+        zeroPosKnobAngle[i]=0.f;
+        BIQUAD_LIST
+#undef X
 
     }
 
@@ -122,7 +128,125 @@ protected:
         BIQUAD_LIST
 #undef X
 #undef Y_REAL
+
+        float c,d;
+
+#define X(i) \
+        if(index==kParamInAngle##i||index==kParamOutAngle##i||index==kParamFeed##i||index==kParamFreq##i){\
+            calcZeroPosKnobAngle(i);\
+    }
+        BIQUAD_LIST
+#undef X
         repaint();
+    }
+
+    void calcZeroPosKnobAngle(int i){
+        float angle, c, d;
+#define X(j)\
+        if(j==i){\
+                c=fFeed##j*cos(fFreq##j*M_PI/24000.f);\
+                d=-4.f*fFeed##j*fFeed##j*sin(fFreq##j*M_PI/24000.f)*sin(fFreq##j*M_PI/24000.f);\
+        angle=fOutAngle##j+fInAngle##j;\
+        }
+
+        BIQUAD_LIST
+#undef X
+        float denominator=2*cos(angle)+sin(angle);
+        if(denominator==0.f){
+            zeroPosKnobAngle[i]=M_PI;
+        }else{
+            float zero=(c*c-d*0.25f)*cos(angle)/(2*cos(angle)+sin(angle));
+            zeroPosKnobAngle[i]=2*atan(zero);
+        }
+    }
+
+    void calcOutAngle(int i){
+        float angle, c, d;
+#define X(j)\
+        if(j==i){\
+         c=fFeed##j*cos(fFreq##j*M_PI/24000.f);\
+             d=-4.f*fFeed##j*fFeed##j*sin(fFreq##j*M_PI/24000.f)*sin(fFreq##j*M_PI/24000.f);\
+        }
+
+        BIQUAD_LIST
+#undef X
+        if(zeroPosKnobAngle[i]==0.f){
+            angle=M_PI/2;
+        }else{
+            if(zeroPosKnobAngle[i]==M_PI||zeroPosKnobAngle[i]==-M_PI){
+                angle=atan(-2.f);
+            }else{
+                angle=atan((c*c-d*0.25f)/tan(0.5*zeroPosKnobAngle[i])-2.f);
+            }
+        }
+#define X(j)\
+        if(j==i){\
+            angle=angle-fInAngle##j;\
+            while(angle-fOutAngle##j>M_PI/2)angle-=M_PI;\
+            while(fOutAngle##j-angle>M_PI/2)angle+=M_PI;\
+        while(angle>M_PI)angle-=2*M_PI;\
+        while(angle<=-M_PI)angle+=2*M_PI;\
+            fOutAngle##j=angle;\
+            editParameter(kParamOutAngle##j,true);\
+            setParameterValue(kParamOutAngle##j,fOutAngle##j);\
+            editParameter(kParamOutAngle##j, false);\
+         }
+
+        BIQUAD_LIST
+#undef X
+
+    }
+
+    bool displayZeroPosKnob(int i){
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        if (window->SkipItems) return false;
+        ImVec2 base_pos = ImGui::GetCursorScreenPos(); // Save starting position
+
+
+
+        float radius=ImGui::GetTextLineHeight() * 3.5f;
+        ImVec2 size = ImVec2(radius * 2.0f, radius * 2.0f);
+        ImGui::PushItemWidth(size.x);
+        bool valueChanged=false;
+
+        if(InfiniteKnob("ZerPos",&(zeroPosKnobAngle[i]),-M_PI,M_PI,0.001f,radius,ImGuiKnobFlags_NoTitle)){
+            calcOutAngle(i);
+
+            if(ImGui::IsItemActivated()){
+                valueChanged=true;
+            }
+        }
+
+
+        ImGui::SetCursorScreenPos(base_pos);
+
+        ImGui::BeginTable("Zeropos", 3);
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
+        // Center title
+        auto title_size = ImGui::CalcTextSize("Phase shift", NULL, false, size.x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
+
+        ImGui::Text("Phase shift");
+        ImGui::Text("\u221E");
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+
+        ImGui::Text("LC");
+        ImGui::TableNextColumn();
+        ImGui::Text("1   Zero   -1");
+
+        ImGui::TableNextColumn();
+        ImGui::Text("HC");
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+        ImGui::Text("0");
+        ImGui::Text("All pole");
+        ImGui::EndTable();
+        ImGui::PopItemWidth();
+
+        return valueChanged;
     }
     void displayRows()
     {
@@ -167,6 +291,7 @@ protected:
                 if(ImGui::IsItemActivated())\
                     editParameter(kParamInAngle##i,true);\
                 setParameterValue(kParamInAngle##i,fInAngle##i);\
+                calcOutAngle(i);\
             }\
             if (ImGui::IsItemDeactivated())\
             {\
@@ -185,10 +310,11 @@ protected:
             ImGui::Separator();\
             \
             ImGui::TableNextColumn();\
-                if (ImGuiKnobs::Knob("Feed", &fFeed##i, -1.f, 1.0f)) {\
+                if (ImGuiKnobs::Knob("Feed", &fFeed##i, 0.001f, 1.0f)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamFeed##i,true);\
                     setParameterValue(kParamFeed##i,fFeed##i);\
+                    calcOutAngle(i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
@@ -198,6 +324,7 @@ protected:
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamFreq##i,true);\
                     setParameterValue(kParamFreq##i,fFreq##i);\
+                    calcOutAngle(i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
@@ -231,6 +358,7 @@ protected:
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamOutAngle##i,true);\
                     setParameterValue(kParamOutAngle##i,fOutAngle##i);\
+                    calcZeroPosKnobAngle(i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
@@ -246,6 +374,8 @@ protected:
             {\
                     editParameter(kParamOutAngleOffset##i, false);\
             }\
+            ImGui::SameLine();\
+            displayZeroPosKnob(i);\
             ImGui::Separator();\
             ImGui::PopID();
 

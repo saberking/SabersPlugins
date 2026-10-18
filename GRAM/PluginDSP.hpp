@@ -341,7 +341,7 @@ protected:
                 return; \
         } \
             if(index == kParamFeed##i) { \
-                parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
+                parameter.ranges = ParameterRanges(0.1f, 0.001f, 1.f); \
                 parameter.name = "Biquad " #i " Feed"; \
                 parameter.symbol = "biquad_" #i "_Feed"; \
                 return; \

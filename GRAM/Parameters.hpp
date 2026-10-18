@@ -22,7 +22,7 @@ float fInLvl##i=0.0f;\
     float fInAngle##i=0.0f;\
     float fInPan##i=0.0f;\
     float fInAngleOffset##i=0.f;\
-    float fFeed##i=0.f;\
+    float fFeed##i=0.1f;\
     float fFreq##i=0.f;\
     BIQUAD_INNER_LIST(i)\
     float fOutPan##i=0.f;\
