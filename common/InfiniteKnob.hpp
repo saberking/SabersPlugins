@@ -5,7 +5,7 @@
 #include "DearImGuiKnobs/imgui-knobs.h"
 #include <cmath>
 
-bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.01f, float radius = 0.0f, int flags=0) {
+bool InfiniteKnob(const char* label, float* value, float minValue, float maxValue, float speed = 0.001f, float radius = 0.0f, int flags=0) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
 

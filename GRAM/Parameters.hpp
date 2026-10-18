@@ -7,7 +7,7 @@ START_NAMESPACE_DISTRHO
 enum Parameters {
 #define Y_REAL(i,j) kParamCrossLvl##i##j,kParamCrossAngle##i##j,kParamCrossPan##i##j,kParamCrossAngleOffset##i##j,
 #define X(i) kParamInLvl##i, kParamInAngle##i, kParamInPan##i, kParamInAngleOffset##i,\
-    kParamPoleCentre##i, kParamDiscriminant##i,\
+    kParamFeed##i, kParamFreq##i,\
     BIQUAD_INNER_LIST(i)\
     kParamOutPan##i, kParamOutAngleOffset##i, \
     kParamOutLvl##i, kParamOutAngle##i,
@@ -22,8 +22,8 @@ float fInLvl##i=0.0f;\
     float fInAngle##i=0.0f;\
     float fInPan##i=0.0f;\
     float fInAngleOffset##i=0.f;\
-    float fPoleCentre##i=0.f;\
-    float fDiscriminant##i=0.f;\
+    float fFeed##i=0.f;\
+    float fFreq##i=0.f;\
     BIQUAD_INNER_LIST(i)\
     float fOutPan##i=0.f;\
     float fOutAngleOffset##i=0.f;\
@@ -59,11 +59,11 @@ if(index==kParamInLvl##i){\
     if(index==kParamInAngleOffset##i){\
         fInAngleOffset##i=value;\
 }\
-    if(index==kParamPoleCentre##i){\
-        fPoleCentre##i=value;\
+    if(index==kParamFeed##i){\
+        fFeed##i=value;\
 }\
-    if(index==kParamDiscriminant##i){\
-        fDiscriminant##i=value;\
+    if(index==kParamFreq##i){\
+        fFreq##i=value;\
 }\
     BIQUAD_INNER_LIST(i)\
     if(index==kParamOutPan##i){\

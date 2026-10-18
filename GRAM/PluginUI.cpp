@@ -185,23 +185,23 @@ protected:
             ImGui::Separator();\
             \
             ImGui::TableNextColumn();\
-                if (ImGuiKnobs::Knob("Centre", &fPoleCentre##i, -1.f, 1.0f)) {\
+                if (ImGuiKnobs::Knob("Feed", &fFeed##i, -1.f, 1.0f)) {\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamPoleCentre##i,true);\
-                    setParameterValue(kParamPoleCentre##i,fPoleCentre##i);\
+                    editParameter(kParamFeed##i,true);\
+                    setParameterValue(kParamFeed##i,fFeed##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamPoleCentre##i, false);\
+                    editParameter(kParamFeed##i, false);\
             }\
-                if(ImGuiKnobs::Knob("Discriminant",&fDiscriminant##i,-4.f,4.f)){\
+                if(InfiniteKnob("Freq",&fFreq##i,-24000.f,24000.f)){\
                     if(ImGui::IsItemActivated())\
-                    editParameter(kParamDiscriminant##i,true);\
-                    setParameterValue(kParamDiscriminant##i,fDiscriminant##i);\
+                    editParameter(kParamFreq##i,true);\
+                    setParameterValue(kParamFreq##i,fFreq##i);\
             }\
                 if (ImGui::IsItemDeactivated())\
             {\
-                    editParameter(kParamDiscriminant##i, false);\
+                    editParameter(kParamFreq##i, false);\
             }\
             ImGui::Separator();\
             ImGui::TableNextColumn();\

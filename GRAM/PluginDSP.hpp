@@ -148,6 +148,7 @@ protected:
         float panAngle;
         Eigen::Array<float,2,2> inMatrix, outMatrix;
         Eigen::Rotation2Df rot2d;
+        float c,d;
         weights.matrix().setZero();
 //pan: zero is 45 degrees, -M_PI/2 is zero degrees, M_PI/2 is 90 degrees
 //left magnitude is cos(pan), right is sin(pan)
@@ -169,8 +170,10 @@ protected:
         inL(2*i+1)=inMatrix(1,0);\
         inR(2*i)=inMatrix(0,1);\
         inR(2*i+1)=inMatrix(1,1);\
-        weights(2*i, 2*i)=2*fPoleCentre##i;\
-        weights(2*i,2*i+1)=-(fPoleCentre##i*fPoleCentre##i-fDiscriminant##i*0.25f);\
+        c=fFeed##i*cos(fFreq##i*M_PI/24000.f);\
+        d=-4.f*fFeed##i*fFeed##i*sin(fFreq##i*M_PI/24000.f)*sin(fFreq##i*M_PI/24000.f);\
+        weights(2*i, 2*i)=2*c;\
+        weights(2*i,2*i+1)=-c*c+d*0.25f;\
         weights(2*i+1,2*i)=1;\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outMatrix.matrix().setZero();\
@@ -337,16 +340,16 @@ protected:
                 parameter.symbol = "biquad_" #i "_in_angle_off"; \
                 return; \
         } \
-            if(index == kParamPoleCentre##i) { \
+            if(index == kParamFeed##i) { \
                 parameter.ranges = ParameterRanges(0.f, -1.f, 1.f); \
-                parameter.name = "Biquad " #i " PoleCentre"; \
-                parameter.symbol = "biquad_" #i "_pole_centre"; \
+                parameter.name = "Biquad " #i " Feed"; \
+                parameter.symbol = "biquad_" #i "_Feed"; \
                 return; \
         } \
-            if(index == kParamDiscriminant##i) { \
-                parameter.ranges = ParameterRanges(0.f, -4.f, 4.f); \
-                parameter.name = "Biquad " #i " Discriminant"; \
-                parameter.symbol = "biquad_" #i "_discriminant"; \
+            if(index == kParamFreq##i) { \
+                parameter.ranges = ParameterRanges(0.f, -24000.f, 24000.f); \
+                parameter.name = "Biquad " #i " Freq"; \
+                parameter.symbol = "biquad_" #i "_Freq"; \
                 return; \
         }\
         BIQUAD_INNER_LIST(i)\
@@ -409,11 +412,11 @@ protected:
         if(index==kParamInAngleOffset##i){\
             return fInAngleOffset##i;\
         }\
-        if(index==kParamPoleCentre##i){\
-            return fPoleCentre##i;\
+        if(index==kParamFeed##i){\
+            return fFeed##i;\
         }\
-        if(index==kParamDiscriminant##i){\
-            return fDiscriminant##i;\
+        if(index==kParamFreq##i){\
+            return fFreq##i;\
         }\
         BIQUAD_INNER_LIST(i)\
         if(index == kParamOutPan##i) { \
