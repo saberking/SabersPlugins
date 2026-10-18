@@ -37,6 +37,7 @@ public:
 #undef X
 #undef Y_REAL
 
+    bool isPriorityZero=true;
     float zeroPosKnobAngle[BIQUAD_COUNT];
     ImGuiPluginUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH,DISTRHO_UI_DEFAULT_HEIGHT),
@@ -360,7 +361,8 @@ protected:
                 if(ImGui::IsItemActivated())\
                     editParameter(kParamInAngle##i,true);\
                 setParameterValue(kParamInAngle##i,fInAngle##i);\
-                calcOutAngle(i);\
+                if(isPriorityZero)calcOutAngle(i);\
+                else calcZeroPosKnobAngle(i);\
             }\
             if (ImGui::IsItemDeactivated())\
             {\
@@ -499,6 +501,8 @@ protected:
                 ImGui::EndCombo(); // Always call EndCombo if BeginCombo returns true
             }
             getPluginDPSPointer()->activation.store(type,std::memory_order_relaxed);
+
+            ImGui::Checkbox("Prioritise zero position",&isPriorityZero);
             displayRows();
 
         }
