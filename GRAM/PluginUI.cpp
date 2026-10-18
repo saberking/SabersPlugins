@@ -194,7 +194,7 @@ protected:
             {\
                     editParameter(kParamPoleCentre##i, false);\
             }\
-                if(InfiniteKnob("Discriminant",&fDiscriminant##i,-1.f,1.f)){\
+                if(ImGuiKnobs::Knob("Discriminant",&fDiscriminant##i,-4.f,4.f)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamDiscriminant##i,true);\
                     setParameterValue(kParamDiscriminant##i,fDiscriminant##i);\

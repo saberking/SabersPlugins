@@ -170,7 +170,7 @@ protected:
         inR(2*i)=inMatrix(0,1);\
         inR(2*i+1)=inMatrix(1,1);\
         weights(2*i, 2*i)=2*fPoleCentre##i;\
-        weights(2*i,2*i+1)=-(fPoleCentre##i*fPoleCentre##i-fDiscriminant##i*fDiscriminant##i);\
+        weights(2*i,2*i+1)=-(fPoleCentre##i*fPoleCentre##i-fDiscriminant##i*0.25f);\
         weights(2*i+1,2*i)=1;\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outMatrix.matrix().setZero();\
@@ -344,7 +344,7 @@ protected:
                 return; \
         } \
             if(index == kParamDiscriminant##i) { \
-                parameter.ranges = ParameterRanges(0.f, -24000.f, 24000.f); \
+                parameter.ranges = ParameterRanges(0.f, -4.f, 4.f); \
                 parameter.name = "Biquad " #i " Discriminant"; \
                 parameter.symbol = "biquad_" #i "_discriminant"; \
                 return; \
