@@ -172,9 +172,10 @@ protected:
         inR(2*i+1)=inMatrix(1,1);\
         c=fFeed##i*cos(fFreq##i*M_PI/24000.f);\
         d=-4.f*fFeed##i*fFeed##i*sin(fFreq##i*M_PI/24000.f)*sin(fFreq##i*M_PI/24000.f);\
-        weights(2*i, 2*i)=2*c;\
+        weights(2*i, 2*i)=0;\
         weights(2*i,2*i+1)=-c*c+d*0.25f;\
         weights(2*i+1,2*i)=1;\
+        weights(2*i+1, 2*i+1)=2*c;\
         panAngle=M_PI/4.f+fOutPan##i/2.f;\
         outMatrix.matrix().setZero();\
         outMatrix(0,0)=outMatrix(0,1)=1;\

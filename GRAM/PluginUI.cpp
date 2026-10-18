@@ -146,16 +146,16 @@ protected:
         if(j==i){\
                 c=fFeed##j*cos(fFreq##j*M_PI/24000.f);\
                 d=-4.f*fFeed##j*fFeed##j*sin(fFreq##j*M_PI/24000.f)*sin(fFreq##j*M_PI/24000.f);\
-        angle=fOutAngle##j+fInAngle##j;\
+        angle=fOutAngle##j/*+fInAngle##j*/;\
         }
 
         BIQUAD_LIST
 #undef X
-        float denominator=2*cos(angle)+sin(angle);
+        float denominator=sin(angle);
         if(denominator==0.f){
             zeroPosKnobAngle[i]=M_PI;
         }else{
-            float zero=(c*c-d*0.25f)*cos(angle)/(2*cos(angle)+sin(angle));
+            float zero=(c*c-d*0.25f)*cos(angle)/sin(angle);
             zeroPosKnobAngle[i]=2*atan(zero);
         }
     }
@@ -174,14 +174,15 @@ protected:
             angle=M_PI/2;
         }else{
             if(zeroPosKnobAngle[i]==M_PI||zeroPosKnobAngle[i]==-M_PI){
-                angle=atan(-2.f);
+                angle=0;
             }else{
-                angle=atan((c*c-d*0.25f)/tan(0.5*zeroPosKnobAngle[i])-2.f);
+                float cotanArgument=tan(0.5*zeroPosKnobAngle[i])/(c*c-d*0.25f);
+                angle=atan(1.f/cotanArgument);
             }
         }
 #define X(j)\
         if(j==i){\
-            angle=angle-fInAngle##j;\
+            /*angle=angle-fInAngle##j;*/\
             while(angle-fOutAngle##j>M_PI/2)angle-=M_PI;\
             while(fOutAngle##j-angle>M_PI/2)angle+=M_PI;\
         while(angle>M_PI)angle-=2*M_PI;\
