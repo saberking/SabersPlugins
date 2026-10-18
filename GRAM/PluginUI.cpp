@@ -204,12 +204,12 @@ protected:
 
 
 
-        float radius=ImGui::GetTextLineHeight() * 3.5f;
+        float radius=ImGui::GetTextLineHeight() * 6.5f;
         ImVec2 size = ImVec2(radius * 2.0f, radius * 2.0f);
         ImGui::PushItemWidth(size.x);
         bool valueChanged=false;
-
-        if(InfiniteKnob("ZerPos",&(zeroPosKnobAngle[i]),-M_PI,M_PI,0.001f,radius,ImGuiKnobFlags_NoTitle)){
+        ImGui::BeginGroup();
+        if(InfiniteKnob("Zero position",&(zeroPosKnobAngle[i]),-M_PI,M_PI,0.001f,radius,ImGuiKnobFlags_NoInput)){
             calcOutAngle(i);
 
             if(ImGui::IsItemActivated()){
@@ -219,38 +219,47 @@ protected:
 
 
         ImGui::SetCursorScreenPos(base_pos);
+        ImGui::Text("");
 
-        ImGui::BeginTable("Zeropos", 3);
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
+
 
         // Center title
         auto title_size = ImGui::CalcTextSize("Phase shift", NULL, false, size.x);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
-
         ImGui::Text("Phase shift");
-        ImGui::Text("\u221E");
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
 
-        ImGui::Text("LC");
-        ImGui::TableNextColumn();
-        ImGui::Text("1   Zero   -1");
+        title_size = ImGui::CalcTextSize("inf", NULL, false, size.x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
+        ImGui::Text("inf");
+        ImGui::Text("");
+        ImGui::Text("");
 
-        ImGui::TableNextColumn();
-        ImGui::Text("HC");
-        ImGui::TableNextColumn();
-        ImGui::TableNextColumn();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetTextLineHeightWithSpacing() * 0.5f);
+
+        title_size = ImGui::CalcTextSize("L.C.   1                    -1   H.C.", NULL, false, size.x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
+        ImGui::Text("L.C.   1                    -1   H.C.");
+        ImGui::Text("");
+        ImGui::Text("");
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetTextLineHeightWithSpacing() * 0.5f);
+
+        title_size = ImGui::CalcTextSize("0", NULL, false, size.x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
         ImGui::Text("0");
+
+        title_size = ImGui::CalcTextSize("All pole", NULL, false, size.x);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (size.x - title_size[0]) * 0.5f);
         ImGui::Text("All pole");
-        ImGui::EndTable();
+
+        ImGui::EndGroup();
+
         ImGui::PopItemWidth();
 
         return valueChanged;
     }
     void displayRows()
     {
-        int width=8+BIQUAD_COUNT/2;
+        // int width=8+BIQUAD_COUNT/2;
 
         if (ImGui::BeginTable("Awesom table",4)){
             ImGui::TableNextColumn();
@@ -265,6 +274,9 @@ protected:
             ImGui::TableNextColumn();
             ImGui::Text("Output");
             ImGui::Separator();
+            // ImGui::TableNextColumn();
+            // ImGui::Text("Zero");
+            // ImGui::Separator();
 #define X(i)\
             ImGui::PushID(i);\
             ImGui::TableNextColumn();\
@@ -298,7 +310,7 @@ protected:
                 editParameter(kParamInAngle##i, false);\
             }\
             ImGui::SameLine();\
-                if(InfiniteKnob("AngleOffset",&fInAngleOffset##i,-M_PI,M_PI)){\
+                if(InfiniteKnob("A. offset",&fInAngleOffset##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamInAngleOffset##i,true);\
                     setParameterValue(kParamInAngleOffset##i,fInAngleOffset##i);\
@@ -335,6 +347,7 @@ protected:
             ImGui::TableNextColumn();\
             ImGui::PopID();\
             ImGui::PushID(i+BIQUAD_COUNT);\
+                ImGui::BeginGroup();\
             if (ImGuiKnobs::Knob("Vol", &fOutLvl##i, -4.f, 4.0f)) {\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamOutLvl##i,true);\
@@ -343,16 +356,6 @@ protected:
                 if (ImGui::IsItemDeactivated())\
             {\
                     editParameter(kParamOutLvl##i, false);\
-            }\
-                ImGui::SameLine();\
-                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.3f", ImGuiKnobVariant_Stepped, 0)) {\
-                    if(ImGui::IsItemActivated())\
-                    editParameter(kParamOutPan##i,true);\
-                    setParameterValue(kParamOutPan##i,fOutPan##i);\
-            }\
-                if (ImGui::IsItemDeactivated())\
-            {\
-                    editParameter(kParamOutPan##i, false);\
             }\
                 if(InfiniteKnob("Angle",&fOutAngle##i,-M_PI,M_PI,0.01f,0.f,0)){\
                     if(ImGui::IsItemActivated())\
@@ -364,8 +367,19 @@ protected:
             {\
                     editParameter(kParamOutAngle##i, false);\
             }\
-                ImGui::SameLine();\
-                if(InfiniteKnob("AngleOffset",&fOutAngleOffset##i,-M_PI,M_PI)){\
+            ImGui::EndGroup();\
+            ImGui::SameLine();\
+            ImGui::BeginGroup();\
+                if (ImGuiKnobs::Knob("Pan", &fOutPan##i, -M_PI/2, M_PI/2, 0.01f, "%.3f", ImGuiKnobVariant_Stepped, 0)) {\
+                    if(ImGui::IsItemActivated())\
+                    editParameter(kParamOutPan##i,true);\
+                    setParameterValue(kParamOutPan##i,fOutPan##i);\
+            }\
+                if (ImGui::IsItemDeactivated())\
+            {\
+                    editParameter(kParamOutPan##i, false);\
+            }\
+                if(InfiniteKnob("A. offset",&fOutAngleOffset##i,-M_PI,M_PI)){\
                     if(ImGui::IsItemActivated())\
                     editParameter(kParamOutAngleOffset##i,true);\
                     setParameterValue(kParamOutAngleOffset##i,fOutAngleOffset##i);\
@@ -374,9 +388,10 @@ protected:
             {\
                     editParameter(kParamOutAngleOffset##i, false);\
             }\
+            ImGui::EndGroup();\
             ImGui::SameLine();\
             displayZeroPosKnob(i);\
-            ImGui::Separator();\
+          ImGui::Separator();\
             ImGui::PopID();
 
 
