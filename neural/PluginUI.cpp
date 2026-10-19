@@ -310,8 +310,93 @@ protected:
                 editParameter(kParamDelay, false);
             }
         }
-        //if(!ImGui::IsMouseDown(ImGuiMouseButton_Left)) endDrag();
 
+        if (ImGui::BeginTable("Awesom table",3/*4*/,ImGuiTableFlags_SizingStretchSame)){
+            ImGui::TableSetupColumn("Col 1", ImGuiTableColumnFlags_None, 2.f);
+            ImGui::TableSetupColumn("Col 2", ImGuiTableColumnFlags_None, (float)MATRIX_SIZE);
+            ImGui::TableSetupColumn("Col 3", ImGuiTableColumnFlags_None, 2.f);
+            ImGui::TableNextColumn();
+            ImGui::Text("Input");
+            ImGui::Separator();
+            ImGui::TableNextColumn();
+            ImGui::Text("Matrix");
+            ImGui::Separator();
+            // ImGui::TableNextColumn();
+            // ImGui::Text("Crossfeed");
+            // ImGui::Separator();
+            ImGui::TableNextColumn();
+            ImGui::Text("Output");
+            ImGui::Separator();
+#define KNOB_PARAMS 0.f,NULL,ImGuiKnobVariant_Tick,22.f,ImGuiKnobFlags_NoInput|ImGuiKnobFlags_NoTitle
+                ImGui::TableNextColumn();
+            for(int i=0;i<MATRIX_SIZE;i++){
+                ImGui::PushID(i);
+                if (ImGuiKnobs::Knob("InL", &(inputMatrix(i,0)), -1.f, 1.0f,KNOB_PARAMS)) {
+                    if(ImGui::IsItemActivated())
+                        editParameter(i*2,true);
+                    setParameterValue(i*2,inputMatrix(i,0));
+                }
+                if (ImGui::IsItemDeactivated())
+                {
+                    editParameter(i*2, false);
+                }
+                ImGui::SameLine();
+                if (ImGuiKnobs::Knob("InR", &(inputMatrix(i,1)), -1.f, 1.0f,KNOB_PARAMS)) {
+                    if(ImGui::IsItemActivated())
+                        editParameter(i*2+1,true);
+                    setParameterValue(i*2+1,inputMatrix(i,1));
+                }
+                if (ImGui::IsItemDeactivated())
+                {
+                    editParameter(i*2+1, false);
+                }
+                ImGui::PopID();
+            }
+            ImGui::TableNextColumn();
+            for(int i=0;i<MATRIX_SIZE;i++){
+                for(int j=0;j<MATRIX_SIZE;j++){
+                    ImGui::PushID((i+2)*MATRIX_SIZE+j);
+                    if (ImGuiKnobs::Knob("weight", &(weightMatrix(i,j)), -1.f, 1.0f,KNOB_PARAMS)) {
+                        if(ImGui::IsItemActivated())
+                            editParameter((i+2)*MATRIX_SIZE+j,true);
+                        setParameterValue((i+2)*MATRIX_SIZE+j,weightMatrix(i,j));
+                    }
+                    if (ImGui::IsItemDeactivated())
+                    {
+                        editParameter((i+2)*MATRIX_SIZE+j, false);
+                    }
+                    if(j<MATRIX_SIZE-1) ImGui::SameLine();
+                    ImGui::PopID();
+                }
+
+            }
+            ImGui::TableNextColumn();
+            for(int i=0;i<MATRIX_SIZE;i++){
+                ImGui::PushID(i+(MATRIX_SIZE*(MATRIX_SIZE+2)));
+                if (ImGuiKnobs::Knob("OutL", &(outputMatrix(i,0)), -1.f, 1.0f,KNOB_PARAMS)) {
+                    if(ImGui::IsItemActivated())
+                        editParameter(MATRIX_SIZE*(MATRIX_SIZE+2)+ i*2,true);
+                    setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2,outputMatrix(i,0));
+                }
+                if (ImGui::IsItemDeactivated())
+                {
+                    editParameter(i*2, false);
+                }
+                ImGui::SameLine();
+                if (ImGuiKnobs::Knob("OutR", &(outputMatrix(i,1)), -1.f, 1.0f,KNOB_PARAMS)) {
+                    if(ImGui::IsItemActivated())
+                        editParameter(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+1,true);
+                    setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+1,outputMatrix(i,1));
+                }
+                if (ImGui::IsItemDeactivated())
+                {
+                    editParameter(i*2+1, false);
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::EndTable();
+        }
         ImGui::End();
     }
 

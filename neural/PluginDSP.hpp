@@ -54,7 +54,12 @@ public:
 
             }
         }
-
+        for(int i=0;i<MATRIX_SIZE;i++)
+        {
+            for(int j=0;j<MATRIX_SIZE;j++) weightMatrix(i,j)=0.f;
+            inputMatrix(i,0)=0.f;            inputMatrix(i,1)=0.f;
+            outputMatrix(i,0)=0.f;            outputMatrix(i,1)=0.f;
+        }
 
 
     }
@@ -233,11 +238,10 @@ protected:
 
             time3+=getTimeInterval();
             Eigen::Map<Eigen::Vector<float, MATRIX_SIZE>> x(inputBuffer[inputBufferIndex]);
+
             time4+=getTimeInterval();
 
 
-            // 1. Load your sample into your input vector 'x' here...
-            x[0]=inputs[0][sample];x[1]=inputs[1][sample];
 
             const float* rawW = W.data();
             const float* rawX = x.data();
@@ -249,20 +253,14 @@ protected:
             for (int r = 0; r < MATRIX_SIZE; ++r) {
                 float sum = 0.0f;
 
-                // Use rawW instead of the Eigen object W
                 const float* rowPtr = &rawW[r * MATRIX_SIZE];
+
 
                 for (int c = 0; c < MATRIX_SIZE; ++c) {
                     sum += rowPtr[c] * rawX[c];
                 }
+                rawY[r] = sum+inputs[0][sample]*inputMatrix(r,0)+inputs[1][sample]*inputMatrix(r,1);
 
-                // if(r>2&&sum<-0.5f)
-                // {
-                //         sum=sum*0.8-0.1f;
-
-                // }
-
-                rawY[r] = sum;
             }
             time6+=getTimeInterval();
             if(activationFunction==activationFunctionClip)
@@ -279,8 +277,17 @@ protected:
             }
             time7+=getTimeInterval();
 
+            const float* rawOutMatL = outputMatrix.col(0).data();
+            const float* rawOutMatR = outputMatrix.col(1).data();
 
-            outputs[0][sample]=clip(y[0],2);outputs[1][sample]=clip(y[1],2);
+            float outL=0.f,outR=0.f;
+            for (int r = 0; r < MATRIX_SIZE; ++r) {
+                outL+=rawOutMatL[r]*rawY[r];
+                outR+=rawOutMatR[r]*rawY[r];
+
+            }
+
+            outputs[0][sample]=outL;outputs[1][sample]=outR;
 
             inputBufferIndex=(inputBufferIndex+1)%(MAX_DELAY+1);
             Eigen::Map<Eigen::Vector<float, MATRIX_SIZE>> x2(inputBuffer[(inputBufferIndex+currentLoopDelay)%(MAX_DELAY+1)]);
