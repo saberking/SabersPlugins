@@ -319,22 +319,23 @@ protected:
     {
         // int width=8+BIQUAD_COUNT/2;
 
-        if (ImGui::BeginTable("Awesom table",4)){
+        if (ImGui::BeginTable("Awesom table",3/*4*/,ImGuiTableFlags_SizingStretchSame)){
+            ImGui::TableSetupColumn("Col 1", ImGuiTableColumnFlags_None, 2.f);
+            ImGui::TableSetupColumn("Col 2", ImGuiTableColumnFlags_None, 1.1f);
+            ImGui::TableSetupColumn("Col 3", ImGuiTableColumnFlags_None, 4.f);
             ImGui::TableNextColumn();
             ImGui::Text("Input");
             ImGui::Separator();
             ImGui::TableNextColumn();
             ImGui::Text("Poles");
             ImGui::Separator();
-            ImGui::TableNextColumn();
-            ImGui::Text("Crossfeed");
-            ImGui::Separator();
+            // ImGui::TableNextColumn();
+            // ImGui::Text("Crossfeed");
+            // ImGui::Separator();
             ImGui::TableNextColumn();
             ImGui::Text("Output");
             ImGui::Separator();
-            // ImGui::TableNextColumn();
-            // ImGui::Text("Zero");
-            // ImGui::Separator();
+
 #define X(i)\
             ImGui::PushID(i);\
             ImGui::TableNextColumn();\
@@ -378,6 +379,8 @@ protected:
             {\
                     editParameter(kParamInAngleOffset##i, false);\
             }\
+            ImGui::SameLine();\
+            ImGui::Text("  ");\
             ImGui::Separator();\
             \
             ImGui::TableNextColumn();\
@@ -401,9 +404,11 @@ protected:
             {\
                     editParameter(kParamFreq##i, false);\
             }\
+            ImGui::SameLine();\
+            ImGui::Text("  ");\
             ImGui::Separator();\
             ImGui::TableNextColumn();\
-            ImGui::TableNextColumn();\
+            /*ImGui::TableNextColumn();*/\
             ImGui::PopID();\
             ImGui::PushID(i+BIQUAD_COUNT);\
                 ImGui::BeginGroup();\
@@ -448,6 +453,8 @@ protected:
                     editParameter(kParamOutAngleOffset##i, false);\
             }\
             ImGui::EndGroup();\
+            ImGui::SameLine();\
+            ImGui::Text(" ");\
             ImGui::SameLine();\
             displayZeroPosKnob(i);\
           ImGui::Separator();\

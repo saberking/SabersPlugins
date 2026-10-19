@@ -141,6 +141,7 @@ protected:
             break;
         }
     }
+
     void calculateMatrix()
     {
         std::cout<<"calculate"<<std::endl;
