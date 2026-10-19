@@ -145,7 +145,7 @@
 
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_HEIGHT macro must be defined as well.
  */
-#define DISTRHO_UI_DEFAULT_WIDTH 400
+#define DISTRHO_UI_DEFAULT_WIDTH 1200
 
 /**
    Default UI height to use when creating initial and temporary windows.@n
@@ -156,7 +156,7 @@
 
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_WIDTH macro must be defined as well.
  */
-#define DISTRHO_UI_DEFAULT_HEIGHT 160
+#define DISTRHO_UI_DEFAULT_HEIGHT 800
 
 /**
    Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
@@ -170,7 +170,7 @@
    Enabling this options makes it possible for the user to resize the plugin UI at anytime.
    @see UI::setGeometryConstraints(uint, uint, bool, bool)
  */
-#define DISTRHO_UI_USER_RESIZABLE 0
+#define DISTRHO_UI_USER_RESIZABLE 1
 
 /**
    The %UI URI when exporting in LV2 format.@n

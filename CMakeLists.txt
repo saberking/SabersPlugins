@@ -88,7 +88,7 @@ dpf_add_plugin(neural
 
 target_sources(neural
   PRIVATE
-    neural/Parameters.hpp
+
     # src/DragAndDrop.hpp
     common/WinConsoleOutput.hpp
     # src/Editor.hpp

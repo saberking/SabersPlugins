@@ -7,7 +7,6 @@
 
 #include "DistrhoUI.hpp"
 #include "ResizeHandle.hpp"
-#include "Parameters.hpp"
 
 #include <../clap/include/clap/ext/context-menu.h>
 #include <../clap/include/clap/ext/state.h>
@@ -27,14 +26,22 @@ class ImGuiPluginUI : public UI
     ResizeHandle fResizeHandle;
     bool needsNormalise=false;
 public:
-    float fA,fB,fC,fD;
+    alignas(64) Eigen::Array<float, 30, 2> inputMatrix, outputMatrix;
+    alignas(64) Eigen::Array<float, 30, 30> weightMatrix;
     float fDelay;
+    float fMaxEigenvalue;
+
+    std::mt19937 gen;
+    std::normal_distribution<float> d;
     ImGuiPluginUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH,DISTRHO_UI_DEFAULT_HEIGHT),
         fResizeHandle(this)
     {
 
         // const double scaleFactor = getScaleFactor();
+        std::srand(std::time(nullptr));
+        std::random_device rd;
+        gen.seed(rd()); // Seed this specific instance with a hardware random
 
         setSize(DISTRHO_UI_DEFAULT_WIDTH,DISTRHO_UI_DEFAULT_HEIGHT);
 
@@ -109,26 +116,118 @@ public:
     // Window& getWindow() const override {
     //     return UI::getWindow();
     // }
+    void normaliseMatrix()
+    {
+        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+
+        Eigen::EigenSolver<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE>> solver(W, false);
+        float maxMagnitude = 0.0f;
+        for (int i = 0; i < MATRIX_SIZE-2; ++i) {
+            maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
+        }
+        std::cout<<"normalise"<<maxMagnitude<<std::endl;
+        //maxMagnitude+=0.001f;
+        float mult=fMaxEigenvalue/std::max(0.001f,maxMagnitude);
+
+        //float mult=1/findMaxAmplification(outPointer);
+
+        W *=mult;
+
+        // for (int r = 0; r < MATRIX_SIZE; ++r) {
+        //     for (int c = 0; c < MATRIX_SIZE; ++c) {
+        //         if (std::abs(W(r, c)) > fMaxEigenvalue) {
+        //             // Keep the original positive/negative sign but snap the value to 0.95f
+        //             W(r, c) = std::copysign(fMaxEigenvalue, W(r, c));
+        //         }
+        //     }
+        // }
+
+        //         W.block<MATRIX_SIZE,2>(0,0)*=0.95f;
+        // W.block<2,MATRIX_SIZE>(0,0)*=0.95f;
+        for(int i=0;i<MATRIX_SIZE;i++){
+            for(int j=0;j<2;j++){
+                setParameterValue(i*2+j,inputMatrix(i,j));
+                setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+j,outputMatrix(i,j));
+            }
+            for(int j=0;j<MATRIX_SIZE;j++){
+                setParameterValue(MATRIX_SIZE*(2+i)+j,weightMatrix(i,j));
+            }
+        }
+
+    }
+    void randomise()
+    {
 
 
+
+
+
+        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+
+        Eigen::MatrixXf X(MATRIX_SIZE, MATRIX_SIZE);
+        for (int r = 0; r < MATRIX_SIZE; ++r) {
+            for (int c = 0; c < MATRIX_SIZE; ++c) {
+                X(r, c) = d(gen); // Populating matrix with a true Gaussian profile
+            }
+        }
+
+        // A Householder QR acting on a Gaussian matrix produces a perfectly un-biased
+        // Haar-distributed random orthogonal matrix, eliminating Left/Right panning bias!
+        Eigen::HouseholderQR<Eigen::MatrixXf> qr(X);
+        Eigen::MatrixXf Q = qr.householderQ();
+
+        W = (W * Q * 0.1f).eval()  + (W * 0.9f).eval();
+
+        // Fix noise injection using the same Gaussian distribution profile
+        Eigen::MatrixXf noise(MATRIX_SIZE, MATRIX_SIZE);
+        const float noiseAmount = 0.05f;
+        for (int r = 0; r < MATRIX_SIZE; ++r) {
+            for (int c = 0; c < MATRIX_SIZE; ++c) {
+                noise(r, c) = d(gen) * noiseAmount;
+            }
+        }
+        W += noise;
+        normaliseMatrix();
+
+
+    }
+    void delay()
+    {
+
+
+
+
+        // outPointer[MATRIX_SIZE-2]=1.f;
+        // outPointer[(MATRIX_SIZE+CONSTANT_KNOB_COUNT)+MATRIX_SIZE-1]=1.f;
+        // for(int i =2;i<MATRIX_SIZE;i++)
+        // {
+        //     outPointer[(MATRIX_SIZE+CONSTANT_KNOB_COUNT)*i+i-2]=1.f;
+
+        // }
+        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+
+
+        auto circularSequence = (Eigen::VectorXi::LinSpaced(MATRIX_SIZE, -2, MATRIX_SIZE - 3).array() + MATRIX_SIZE)
+                                    .unaryExpr([](int val) { return val % MATRIX_SIZE; });
+
+        // 2. COMPILER-SAFE REWRITE: Create a temporary copy of the old matrix state
+        // This completely stops memory aliasing bugs without needing Eigen::all!
+        Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor> tempW = W;
+
+        // 3. Remap the rows sequentially
+        for (int i = 0; i < MATRIX_SIZE; ++i) {
+            int targetRowIndex = circularSequence[i];
+            W.row(i) += tempW.row(targetRowIndex)*0.2f; // Cleanly assigns the whole row
+        }
+
+        normaliseMatrix();
+
+
+    }
 
 protected:
     void parameterChanged(uint32_t index, float value) override {
-        if(index==kParamA){
-            fA = value;
-        }
-        if(index==kParamB){
-            fB=value;
-        }
-        if(index==kParamC){
-            fC=value;
-        }
-        if(index==kParamD){
-            fD=value;
-        }
-        if(index==kParamDelay){
-            fDelay=value;
-        }
+        SET_PARAMETER_VALUE
         repaint();
     }
 
@@ -148,11 +247,11 @@ protected:
         {
             if(ImGui::Button("Randomise"))
             {
-                getPluginDPSPointer()->randomise();
+                randomise();
             }
             if(ImGui::Button("Delay##delaybutton"))
             {
-                getPluginDPSPointer()->delay();
+                delay();
             }
             // if(ImGui::Button("Print matrix")){
             //     getPluginDPSPointer()->printMatrix();
@@ -160,15 +259,19 @@ protected:
             // if(ImGui::Button("Normalise")){
             //     getPluginDPSPointer()->normalise();
             // }
-            float tempMaxEigenvalue=getPluginDPSPointer()->max_eigenvalue;
-            if(ImGui::SliderFloat("Max eigenvalue", &tempMaxEigenvalue, 0.9f,1.f))
+            if(ImGui::SliderFloat("Max eigenvalue", &fMaxEigenvalue, 0.9f,1.f))
             {
+                if(ImGui::IsItemActivated()){
+                    editParameter(kParamMaxEigenvalue,true);
+                }
+                setParameterValue(kParamMaxEigenvalue,fMaxEigenvalue);
+                normaliseMatrix();
 
-                getPluginDPSPointer()->max_eigenvalue=tempMaxEigenvalue;
-                needsNormalise=getPluginDPSPointer()->normalise();
+            }
+            if(ImGui::IsItemDeactivated()){
+                editParameter(kParamMaxEigenvalue,false);
             }
 
-            if(needsNormalise) needsNormalise=getPluginDPSPointer()->normalise();
 
 
             ActivationFunctionType type=getPluginDPSPointer()->activation.load(std::memory_order_relaxed);
