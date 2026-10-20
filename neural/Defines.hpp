@@ -2,6 +2,14 @@
 #define DEFINES_HPP
 
 #define DEBUG 1
+#define MATRIX_SIZE 30
+
+enum Parameters{
+    kParamDelay=MATRIX_SIZE*(MATRIX_SIZE+4),
+    kParamMaxEigenvalue,
+    kParamNoteSlide,
+    kParamCount
+};
 
 #define SET_PARAMETER_VALUE \
 if(index<MATRIX_SIZE*2){\
@@ -18,10 +26,12 @@ inputMatrix(row,col)=value;\
     int row=newIndex/2;\
     int col=newIndex%2;\
 outputMatrix(row,col)=value;\
-}else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)){\
+}else if(index==kParamDelay){\
     fDelay=value;\
-}else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)+1){\
+}else if(index==kParamMaxEigenvalue){\
     fMaxEigenvalue=value;\
+}else if(index==kParamNoteSlide){\
+fNoteSlide=value;\
 }
 
 enum ActivationFunctionType{
@@ -36,14 +46,8 @@ static const char* activationFunctionNames[]={
     "None"
 };
 
-#define MATRIX_SIZE 30
-#define PARAM_COUNT MATRIX_SIZE*(MATRIX_SIZE+4)+2//delay and max eigenvalue
-#define MAX_DELAY 1000
+#define MAX_DELAY 2000
 
-enum Parameters{
-    kParamDelay=MATRIX_SIZE*(MATRIX_SIZE+4),
-    kParamMaxEigenvalue,
-    kParamCount
-};
+
 
 #endif // DEFINES_HPP

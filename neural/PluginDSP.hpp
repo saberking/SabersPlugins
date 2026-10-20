@@ -22,9 +22,11 @@ class ImGuiPluginDSP : public Plugin
     alignas(64) Eigen::Array<float, 30, 30> weightMatrix;
     float fDelay=0.f;
     float fMaxEigenvalue=1.f;
+    float fNoteSlide=1000.f;
     bool consoleAttached=false;
 
     float note=1.f,lastNote=1.f;
+    float noteSlidePos=0;
     bool needsNormalise=false;
 public:
     std::atomic<ActivationFunctionType> activation=activationFunctionClip;
@@ -35,17 +37,12 @@ public:
     int inputBufferIndex=0;
     alignas(64) float outputBuffer[MATRIX_SIZE];
     ImGuiPluginDSP()
-        : Plugin(PARAM_COUNT, 0, 1) // parameters, programs, states
+        : Plugin(kParamCount, 0, 1) // parameters, programs, states
     {
         if (DEBUG&&!GetConsoleWindow()) {
             initConsoleOutput();
             consoleAttached=true;
         }
-
-
-
-
-
         for(int i=0;i<MAX_DELAY+1;i++)
         {
             for(int j=0;j<MATRIX_SIZE;j++)
@@ -140,8 +137,9 @@ protected:
                (135135.0f + x2 * (62370.0f + x2 * (3150.0f + x2 * 28.0f)));
     }
     void noteOn(int midiNote, float velocity){
-        lastNote=note;
+        lastNote=note*noteSlidePos+lastNote*(1.f-noteSlidePos);
         note=std::pow(2.f, -(float)midiNote/12.f);
+        noteSlidePos=0;
     }
 
     void noteOff(int midiNote){
@@ -200,7 +198,6 @@ protected:
         ActivationFunctionType activationFunction=activation.load(std::memory_order_release);
 
 
-        int delay=(int)std::max(0.f,std::min(fDelay*note,(float)MAX_DELAY));
         int currentLoopDelay=lastDelay;
         int lastLoopDelay=currentLoopDelay;
 
@@ -220,11 +217,17 @@ protected:
                 handleMidi(&(midiEvents[curEventIndex++]));
 
             }
-            if(note!=lastNote)
-            {
-                delay=(int)std::max(0.f,std::min(fDelay*note,(float)MAX_DELAY));
-                lastNote=note;
+            int delay;
+            float noteSlideIncrement=1/fNoteSlide;
+            float notePosDelay;
+            if(noteSlidePos<1.f){
+                noteSlidePos=std::min(1.f,noteSlidePos+noteSlideIncrement);
+                notePosDelay=fDelay*(note*noteSlidePos+lastNote*(1-noteSlidePos));
+
+            }else{
+                notePosDelay=fDelay*note;
             }
+            delay=(int)std::max(0.f,std::min(notePosDelay,(float)MAX_DELAY));
             int temp=delay-lastDelay;
             int temp2=(temp*((int)sample+1))/(int)frames;
 
@@ -337,18 +340,24 @@ protected:
             std::string name=std::string("outputMatrix")+std::to_string(row)+"_"+std::to_string(col);
             parameter.name=name.c_str();
             parameter.symbol=name.c_str();
-        }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)){
+        }else if(index==kParamDelay){
             parameter.ranges.min = 0.f;
             parameter.ranges.max = MAX_DELAY;
             parameter.ranges.def = 0.f;
             parameter.name = "Delay";
             parameter.symbol = "Delay";
-        }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)+1){
+        }else if(index==kParamMaxEigenvalue){
             parameter.ranges.min = 0.f;
             parameter.ranges.max = 1.01f;
             parameter.ranges.def = 0.999f;
             parameter.name = "Max_eigenvalue";
             parameter.symbol = "Max_eigenvalue";
+        }else if(index==kParamNoteSlide){
+            parameter.ranges.min = 1.f;
+            parameter.ranges.max = 4000.f;
+            parameter.ranges.def = 500.f;
+            parameter.name = "Note_slide";
+            parameter.symbol = "Note_slide";
         }
 
 
@@ -377,6 +386,8 @@ protected:
 
         }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)+1){
             return fMaxEigenvalue;
+        }else if(index==kParamNoteSlide){
+            return fNoteSlide;
         }
     }
 
@@ -384,7 +395,7 @@ protected:
     void setParameterValue(uint32_t index, float value) override
     {
 SET_PARAMETER_VALUE
-            if(index!=kParamDelay) needsNormalise=true;
+            if(index!=kParamDelay&&index!=kParamNoteSlide) needsNormalise=true;
     }
 
     void activate() override

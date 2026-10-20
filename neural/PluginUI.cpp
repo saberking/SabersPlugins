@@ -30,6 +30,7 @@ public:
     alignas(64) Eigen::Array<float, 30, 30> weightMatrix;
     float fDelay;
     float fMaxEigenvalue;
+    float fNoteSlide;
 
     std::mt19937 gen;
     std::normal_distribution<float> d;
@@ -308,6 +309,18 @@ protected:
             if (ImGui::IsItemDeactivated())
             {
                 editParameter(kParamDelay, false);
+            }
+
+            if(ImGui::SliderFloat("noteSlide##noteSlideSlider",&fNoteSlide,1.f,4000.f))
+            {
+                if(ImGui::IsItemActivated())
+                    editParameter(kParamNoteSlide,true);
+                setParameterValue(kParamNoteSlide,(float)std::max(1.f,std::min(4000.f,fNoteSlide)));
+            }
+
+            if (ImGui::IsItemDeactivated())
+            {
+                editParameter(kParamNoteSlide, false);
             }
         }
 
