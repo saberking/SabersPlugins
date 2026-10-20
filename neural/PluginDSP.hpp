@@ -320,27 +320,35 @@ protected:
         if(index<MATRIX_SIZE*2){
             int row=index/2;
             int col=index%2;
-            parameter.name=(std::string("inputMatrix")+std::to_string(row)+","+std::to_string(col)).c_str();
+            std::string name=std::string("inputMatrix")+std::to_string(row)+"_"+std::to_string(col);
+            parameter.name=name.c_str();
+            parameter.symbol=name.c_str();
         }else if(index<MATRIX_SIZE*(MATRIX_SIZE+2)){
             int newIndex=index-MATRIX_SIZE*2;
             int row=newIndex/MATRIX_SIZE;
             int col=newIndex%MATRIX_SIZE;
-            parameter.name=(std::string("weightMatrix")+std::to_string(row)+","+std::to_string(col)).c_str();
+            std::string name=std::string("weightMatrix")+std::to_string(row)+"_"+std::to_string(col);
+            parameter.name=name.c_str();
+            parameter.symbol=name.c_str();
         }else if(index<MATRIX_SIZE*(MATRIX_SIZE+4)){
             int newIndex=index-MATRIX_SIZE*(MATRIX_SIZE+2);
             int row=newIndex/2;
             int col=newIndex%2;
-            parameter.name=(std::string("outputMatrix")+std::to_string(row)+","+std::to_string(col)).c_str();
+            std::string name=std::string("outputMatrix")+std::to_string(row)+"_"+std::to_string(col);
+            parameter.name=name.c_str();
+            parameter.symbol=name.c_str();
         }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)){
             parameter.ranges.min = 0.f;
             parameter.ranges.max = MAX_DELAY;
             parameter.ranges.def = 0.f;
             parameter.name = "Delay";
+            parameter.symbol = "Delay";
         }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)+1){
             parameter.ranges.min = 0.f;
             parameter.ranges.max = 1.01f;
             parameter.ranges.def = 0.999f;
-            parameter.name = "Max eigenvalue";
+            parameter.name = "Max_eigenvalue";
+            parameter.symbol = "Max_eigenvalue";
         }
 
 
