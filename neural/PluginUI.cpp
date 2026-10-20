@@ -31,6 +31,7 @@ public:
     float fDelay;
     float fMaxEigenvalue;
     float fNoteSlide;
+    int fMatrixSize;
 
     std::mt19937 gen;
     std::normal_distribution<float> d;
@@ -119,11 +120,12 @@ public:
     // }
     void normaliseMatrix()
     {
-        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+        Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> W(
+            weightMatrix.matrix().block(0,0,fMatrixSize,fMatrixSize).data(),fMatrixSize,fMatrixSize);
 
-        Eigen::EigenSolver<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE>> solver(W, false);
+        Eigen::EigenSolver<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> solver(W, false);
         float maxMagnitude = 0.0f;
-        for (int i = 0; i < MATRIX_SIZE-2; ++i) {
+        for (int i = 0; i < fMatrixSize-2; ++i) {
             maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
         }
         std::cout<<"normalise"<<maxMagnitude<<std::endl;
@@ -134,24 +136,14 @@ public:
 
         W *=mult;
 
-        // for (int r = 0; r < MATRIX_SIZE; ++r) {
-        //     for (int c = 0; c < MATRIX_SIZE; ++c) {
-        //         if (std::abs(W(r, c)) > fMaxEigenvalue) {
-        //             // Keep the original positive/negative sign but snap the value to 0.95f
-        //             W(r, c) = std::copysign(fMaxEigenvalue, W(r, c));
-        //         }
-        //     }
-        // }
 
-        //         W.block<MATRIX_SIZE,2>(0,0)*=0.95f;
-        // W.block<2,MATRIX_SIZE>(0,0)*=0.95f;
-        for(int i=0;i<MATRIX_SIZE;i++){
+        for(int i=0;i<fMatrixSize;i++){
             for(int j=0;j<2;j++){
                 setParameterValue(i*2+j,inputMatrix(i,j));
-                setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+j,outputMatrix(i,j));
+                setParameterValue(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+i*2+j,outputMatrix(i,j));
             }
-            for(int j=0;j<MATRIX_SIZE;j++){
-                setParameterValue(MATRIX_SIZE*(2+i)+j,weightMatrix(i,j));
+            for(int j=0;j<fMatrixSize;j++){
+                setParameterValue(MAX_MATRIX_SIZE*(2+i)+j,weightMatrix(i,j));
             }
         }
 
@@ -163,11 +155,11 @@ public:
 
 
 
-        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+        Eigen::Map<Eigen::Matrix<float, MAX_MATRIX_SIZE, MAX_MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
 
-        Eigen::MatrixXf X(MATRIX_SIZE, MATRIX_SIZE);
-        for (int r = 0; r < MATRIX_SIZE; ++r) {
-            for (int c = 0; c < MATRIX_SIZE; ++c) {
+        Eigen::MatrixXf X(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
+        for (int r = 0; r < MAX_MATRIX_SIZE; ++r) {
+            for (int c = 0; c < MAX_MATRIX_SIZE; ++c) {
                 X(r, c) = d(gen); // Populating matrix with a true Gaussian profile
             }
         }
@@ -180,10 +172,10 @@ public:
         W = (W * Q * 0.1f).eval()  + (W * 0.9f).eval();
 
         // Fix noise injection using the same Gaussian distribution profile
-        Eigen::MatrixXf noise(MATRIX_SIZE, MATRIX_SIZE);
+        Eigen::MatrixXf noise(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
         const float noiseAmount = 0.05f;
-        for (int r = 0; r < MATRIX_SIZE; ++r) {
-            for (int c = 0; c < MATRIX_SIZE; ++c) {
+        for (int r = 0; r < MAX_MATRIX_SIZE; ++r) {
+            for (int c = 0; c < MAX_MATRIX_SIZE; ++c) {
                 noise(r, c) = d(gen) * noiseAmount;
             }
         }
@@ -198,25 +190,25 @@ public:
 
 
 
-        // outPointer[MATRIX_SIZE-2]=1.f;
-        // outPointer[(MATRIX_SIZE+CONSTANT_KNOB_COUNT)+MATRIX_SIZE-1]=1.f;
-        // for(int i =2;i<MATRIX_SIZE;i++)
+        // outPointer[MAX_MATRIX_SIZE-2]=1.f;
+        // outPointer[(MAX_MATRIX_SIZE+CONSTANT_KNOB_COUNT)+MAX_MATRIX_SIZE-1]=1.f;
+        // for(int i =2;i<MAX_MATRIX_SIZE;i++)
         // {
-        //     outPointer[(MATRIX_SIZE+CONSTANT_KNOB_COUNT)*i+i-2]=1.f;
+        //     outPointer[(MAX_MATRIX_SIZE+CONSTANT_KNOB_COUNT)*i+i-2]=1.f;
 
         // }
-        Eigen::Map<Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
+        Eigen::Map<Eigen::Matrix<float, MAX_MATRIX_SIZE, MAX_MATRIX_SIZE, Eigen::RowMajor>> W(weightMatrix.data());
 
 
-        auto circularSequence = (Eigen::VectorXi::LinSpaced(MATRIX_SIZE, -2, MATRIX_SIZE - 3).array() + MATRIX_SIZE)
-                                    .unaryExpr([](int val) { return val % MATRIX_SIZE; });
+        auto circularSequence = (Eigen::VectorXi::LinSpaced(MAX_MATRIX_SIZE, -2, MAX_MATRIX_SIZE - 3).array() + MAX_MATRIX_SIZE)
+                                    .unaryExpr([](int val) { return val % MAX_MATRIX_SIZE; });
 
         // 2. COMPILER-SAFE REWRITE: Create a temporary copy of the old matrix state
         // This completely stops memory aliasing bugs without needing Eigen::all!
-        Eigen::Matrix<float, MATRIX_SIZE, MATRIX_SIZE, Eigen::RowMajor> tempW = W;
+        Eigen::Matrix<float, MAX_MATRIX_SIZE, MAX_MATRIX_SIZE, Eigen::RowMajor> tempW = W;
 
         // 3. Remap the rows sequentially
-        for (int i = 0; i < MATRIX_SIZE; ++i) {
+        for (int i = 0; i < MAX_MATRIX_SIZE; ++i) {
             int targetRowIndex = circularSequence[i];
             W.row(i) += tempW.row(targetRowIndex)*0.2f; // Cleanly assigns the whole row
         }
@@ -322,11 +314,23 @@ protected:
             {
                 editParameter(kParamNoteSlide, false);
             }
+
+            if(ImGui::SliderInt("matrixSize##matrixSizeSlider",&fMatrixSize,2,30))
+            {
+                if(ImGui::IsItemActivated())
+                    editParameter(kParamMatrixSize,true);
+                setParameterValue(kParamMatrixSize,std::max(2,std::min(30,fMatrixSize)));
+            }
+
+            if (ImGui::IsItemDeactivated())
+            {
+                editParameter(kParamMatrixSize, false);
+            }
         }
 
         // if (ImGui::BeginTable("Awesom table",3/*4*/,ImGuiTableFlags_SizingStretchSame)){
         //     ImGui::TableSetupColumn("Col 1", ImGuiTableColumnFlags_None, 2.f);
-        //     ImGui::TableSetupColumn("Col 2", ImGuiTableColumnFlags_None, (float)MATRIX_SIZE);
+        //     ImGui::TableSetupColumn("Col 2", ImGuiTableColumnFlags_None, (float)MAX_MATRIX_SIZE);
         //     ImGui::TableSetupColumn("Col 3", ImGuiTableColumnFlags_None, 2.f);
         //     ImGui::TableNextColumn();
         //     ImGui::Text("Input");
@@ -342,7 +346,7 @@ protected:
         //     ImGui::Separator();
 #define KNOB_PARAMS 0.f,NULL,ImGuiKnobVariant_Tick,22.f,ImGuiKnobFlags_NoInput|ImGuiKnobFlags_NoTitle
                 // ImGui::TableNextColumn();
-            // for(int i=0;i<MATRIX_SIZE;i++){
+            // for(int i=0;i<MAX_MATRIX_SIZE;i++){
             //     ImGui::PushID(i);
             //     if (ImGuiKnobs::Knob("InL", &(inputMatrix(i,0)), -1.f, 1.0f,KNOB_PARAMS)) {
             //         if(ImGui::IsItemActivated())
@@ -366,31 +370,31 @@ protected:
             //     ImGui::PopID();
             // }
             // ImGui::TableNextColumn();
-            for(int i=0;i<MATRIX_SIZE;i++){
-                for(int j=0;j<MATRIX_SIZE;j++){
-                    ImGui::PushID((i+2)*MATRIX_SIZE+j);
+            for(int i=0;i<fMatrixSize;i++){
+                for(int j=0;j<fMatrixSize;j++){
+                    ImGui::PushID((i+2)*MAX_MATRIX_SIZE+j);
                     if (ImGuiKnobs::Knob("weight", &(weightMatrix(i,j)), -1.f, 1.0f,KNOB_PARAMS)) {
                         if(ImGui::IsItemActivated())
-                            editParameter((i+2)*MATRIX_SIZE+j,true);
-                        setParameterValue((i+2)*MATRIX_SIZE+j,weightMatrix(i,j));
+                            editParameter((i+2)*MAX_MATRIX_SIZE+j,true);
+                        setParameterValue((i+2)*MAX_MATRIX_SIZE+j,weightMatrix(i,j));
                         normaliseMatrix();
                     }
                     if (ImGui::IsItemDeactivated())
                     {
-                        editParameter((i+2)*MATRIX_SIZE+j, false);
+                        editParameter((i+2)*MAX_MATRIX_SIZE+j, false);
                     }
-                    if(j<MATRIX_SIZE-1) ImGui::SameLine();
+                    if(j<fMatrixSize-1) ImGui::SameLine();
                     ImGui::PopID();
                 }
 
             }
         //     ImGui::TableNextColumn();
-        //     for(int i=0;i<MATRIX_SIZE;i++){
-        //         ImGui::PushID(i+(MATRIX_SIZE*(MATRIX_SIZE+2)));
+        //     for(int i=0;i<MAX_MATRIX_SIZE;i++){
+        //         ImGui::PushID(i+(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)));
         //         if (ImGuiKnobs::Knob("OutL", &(outputMatrix(i,0)), -1.f, 1.0f,KNOB_PARAMS)) {
         //             if(ImGui::IsItemActivated())
-        //                 editParameter(MATRIX_SIZE*(MATRIX_SIZE+2)+ i*2,true);
-        //             setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2,outputMatrix(i,0));
+        //                 editParameter(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+ i*2,true);
+        //             setParameterValue(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+i*2,outputMatrix(i,0));
         //         }
         //         if (ImGui::IsItemDeactivated())
         //         {
@@ -399,8 +403,8 @@ protected:
         //         ImGui::SameLine();
         //         if (ImGuiKnobs::Knob("OutR", &(outputMatrix(i,1)), -1.f, 1.0f,KNOB_PARAMS)) {
         //             if(ImGui::IsItemActivated())
-        //                 editParameter(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+1,true);
-        //             setParameterValue(MATRIX_SIZE*(MATRIX_SIZE+2)+i*2+1,outputMatrix(i,1));
+        //                 editParameter(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+i*2+1,true);
+        //             setParameterValue(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+i*2+1,outputMatrix(i,1));
         //         }
         //         if (ImGui::IsItemDeactivated())
         //         {

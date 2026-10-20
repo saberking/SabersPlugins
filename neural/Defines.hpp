@@ -2,27 +2,28 @@
 #define DEFINES_HPP
 
 #define DEBUG 1
-#define MATRIX_SIZE 30
+#define MAX_MATRIX_SIZE 30
 
 enum Parameters{
-    kParamDelay=MATRIX_SIZE*(MATRIX_SIZE+4),
+    kParamDelay=MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+4),
     kParamMaxEigenvalue,
     kParamNoteSlide,
+    kParamMatrixSize,
     kParamCount
 };
 
 #define SET_PARAMETER_VALUE \
-if(index<MATRIX_SIZE*2){\
+if(index<MAX_MATRIX_SIZE*2){\
     int row=index/2;\
     int col=index%2;\
 inputMatrix(row,col)=value;\
-}else if(index<MATRIX_SIZE*(MATRIX_SIZE+2)){\
-    int newIndex=index-MATRIX_SIZE*2;\
-    int row=newIndex/MATRIX_SIZE;\
-    int col=newIndex%MATRIX_SIZE;\
+}else if(index<MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)){\
+    int newIndex=index-MAX_MATRIX_SIZE*2;\
+    int row=newIndex/MAX_MATRIX_SIZE;\
+    int col=newIndex%MAX_MATRIX_SIZE;\
     weightMatrix(row,col)=value;\
-}else if(index<MATRIX_SIZE*(MATRIX_SIZE+4)){\
-    int newIndex=index-MATRIX_SIZE*(MATRIX_SIZE+2);\
+}else if(index<MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+4)){\
+    int newIndex=index-MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2);\
     int row=newIndex/2;\
     int col=newIndex%2;\
 outputMatrix(row,col)=value;\
@@ -32,6 +33,8 @@ outputMatrix(row,col)=value;\
     fMaxEigenvalue=value;\
 }else if(index==kParamNoteSlide){\
 fNoteSlide=value;\
+}else if(index==kParamMatrixSize){\
+fMatrixSize=(int)value;\
 }
 
 enum ActivationFunctionType{
