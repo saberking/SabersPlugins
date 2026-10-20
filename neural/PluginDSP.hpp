@@ -259,7 +259,7 @@ protected:
             for (int r = 0; r < fMatrixSize; ++r) {
                 float sum = 0.0f;
 
-                const float* rowPtr = &rawW[r * fMatrixSize];
+                const float* rowPtr = &rawW[r * MAX_MATRIX_SIZE];
 
 
                 for (int c = 0; c < fMatrixSize; ++c) {
@@ -298,10 +298,12 @@ protected:
             outputs[0][sample]=rawY[0];outputs[1][sample]=rawY[1];
 
             inputBufferIndex=(inputBufferIndex+1)%(MAX_DELAY+1);
-            Eigen::Map<Eigen::Vector<float, MAX_MATRIX_SIZE>> x2(inputBuffer[(inputBufferIndex+currentLoopDelay)%(MAX_DELAY+1)]);
-            x2.head<MAX_MATRIX_SIZE>() = y.eval();
-            time8+=getTimeInterval();
+            float *buf=inputBuffer[inputBufferIndex];
+            for(int i=0;i<fMatrixSize;i++){
+                buf[i]=rawY[i];
+            }
             if(!(framecounter++%48000)) printTime();
+            time8+=getTimeInterval();
 
         }
         lastDelay=lastLoopDelay;

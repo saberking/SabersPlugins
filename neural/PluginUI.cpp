@@ -120,30 +120,33 @@ public:
     // }
     void normaliseMatrix()
     {
-        Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> W(
-            weightMatrix.matrix().block(0,0,fMatrixSize,fMatrixSize).data(),fMatrixSize,fMatrixSize);
+        // 1. Instantiate a genuine, contiguous Eigen matrix representing the active sub-block
+        Eigen::MatrixXf W(fMatrixSize, fMatrixSize);
 
-        Eigen::EigenSolver<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>> solver(W, false);
-        float maxMagnitude = 0.0f;
-        for (int i = 0; i < fMatrixSize-2; ++i) {
-            maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
-        }
-        std::cout<<"normalise"<<maxMagnitude<<std::endl;
-        //maxMagnitude+=0.001f;
-        float mult=fMaxEigenvalue/std::max(0.001f,maxMagnitude);
-
-        //float mult=1/findMaxAmplification(outPointer);
-
-        W *=mult;
-
-
-        for(int i=0;i<fMatrixSize;i++){
-            for(int j=0;j<2;j++){
-                setParameterValue(i*2+j,inputMatrix(i,j));
-                setParameterValue(MAX_MATRIX_SIZE*(MAX_MATRIX_SIZE+2)+i*2+j,outputMatrix(i,j));
+        // 2. Safely pull elements out of your weightMatrix object into the safe Eigen block
+        for (int i = 0; i < fMatrixSize; ++i) {
+            for (int j = 0; j < fMatrixSize; ++j) {
+                W(i, j) = weightMatrix(i, j);
             }
-            for(int j=0;j<fMatrixSize;j++){
-                setParameterValue(MAX_MATRIX_SIZE*(2+i)+j,weightMatrix(i,j));
+        }
+
+        // 3. Compute eigenvalues safely out of our dedicated contiguous object
+        Eigen::EigenSolver<Eigen::MatrixXf> solver(W, false);
+        float maxMagnitude = solver.eigenvalues().array().abs().maxCoeff();
+
+        std::cout << "normalise " << maxMagnitude << std::endl;
+
+        // 4. Scale our safe local matrix block
+        float mult = fMaxEigenvalue / std::max(0.001f, maxMagnitude);
+        W *= mult;
+
+        // 5. Clamp elements and push them back into your plugin parameters / weightMatrix
+        for(int i = 0; i < fMatrixSize; i++){
+            for(int j = 0; j < fMatrixSize; j++){
+                // Clamp value
+                weightMatrix(i, j) = std::max(-1.f, std::min(1.f, W(i, j)));
+                // Update UI/DSP parameters
+                setParameterValue(MAX_MATRIX_SIZE * (2 + i) + j, weightMatrix(i, j));
             }
         }
 
