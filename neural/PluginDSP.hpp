@@ -244,10 +244,12 @@ protected:
 
 
             const float* rawW = W.data();
-            const float* rawX = x.data();
+            float* rawX = x.data();
             float*       rawY = y.data();
+            const float inL=inputs[0][sample],inR=inputs[1][sample];
 
-
+            rawX[0] += inL;
+            rawX[1]+=inR;
             // 2. Your ultra-fast, thread-safe unrolled loop compiles perfectly now!
             time5+=getTimeInterval();
             for (int r = 0; r < MATRIX_SIZE; ++r) {
@@ -259,14 +261,16 @@ protected:
                 for (int c = 0; c < MATRIX_SIZE; ++c) {
                     sum += rowPtr[c] * rawX[c];
                 }
-                rawY[r] = sum+inputs[0][sample]*inputMatrix(r,0)+inputs[1][sample]*inputMatrix(r,1);
-
+                rawY[r]=sum;
             }
+
             time6+=getTimeInterval();
             if(activationFunction==activationFunctionClip)
             {
-                y = y.array().cwiseMax(-1.0f).cwiseMin(1.0f);
-
+                float* rawY = y.data();
+                for (int r = 0; r < MATRIX_SIZE; ++r) {
+                    rawY[r] = clip(rawY[r]);
+                }
             }
             if(activationFunction==activationFunctionTanh)
             {
@@ -277,17 +281,17 @@ protected:
             }
             time7+=getTimeInterval();
 
-            const float* rawOutMatL = outputMatrix.col(0).data();
-            const float* rawOutMatR = outputMatrix.col(1).data();
+            // const float* rawOutMatL = outputMatrix.col(0).data();
+            // const float* rawOutMatR = outputMatrix.col(1).data();
 
-            float outL=0.f,outR=0.f;
-            for (int r = 0; r < MATRIX_SIZE; ++r) {
-                outL+=rawOutMatL[r]*rawY[r];
-                outR+=rawOutMatR[r]*rawY[r];
+            // float outL=0.f,outR=0.f;
+            // for (int r = 0; r < MATRIX_SIZE; ++r) {
+            //     outL+=rawOutMatL[r]*rawY[r];
+            //     outR+=rawOutMatR[r]*rawY[r];
 
-            }
+            // }
 
-            outputs[0][sample]=outL;outputs[1][sample]=outR;
+            outputs[0][sample]=rawY[0];outputs[1][sample]=rawY[1];
 
             inputBufferIndex=(inputBufferIndex+1)%(MAX_DELAY+1);
             Eigen::Map<Eigen::Vector<float, MATRIX_SIZE>> x2(inputBuffer[(inputBufferIndex+currentLoopDelay)%(MAX_DELAY+1)]);
@@ -334,7 +338,7 @@ protected:
             parameter.name = "Delay";
         }else if(index==MATRIX_SIZE*(MATRIX_SIZE+4)+1){
             parameter.ranges.min = 0.f;
-            parameter.ranges.max = 1.f;
+            parameter.ranges.max = 1.01f;
             parameter.ranges.def = 0.999f;
             parameter.name = "Max eigenvalue";
         }
