@@ -107,8 +107,7 @@ public:
             if(!clapPointer)return;
             auto* hostState = reinterpret_cast<const clap_host_state_t*>(clapPointer->get_extension(clapPointer, CLAP_EXT_STATE));
             if (hostState != nullptr && hostState->mark_dirty != nullptr) {
-                setParameterValue(kParamDelay,(float)std::max(0,std::min(MAX_DELAY,(int)fDelay)));
-
+                setParameterValue(kParamDelay,(float)std::max(0.f,std::min((float)MAX_DELAY,fDelay)));
 
                 hostState->mark_dirty(clapPointer);
             }
