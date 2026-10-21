@@ -139,7 +139,7 @@ protected:
     }
     void noteOn(int midiNote, float velocity){
         lastNote=note*noteSlidePos+lastNote*(1.f-noteSlidePos);
-        note=std::pow(2.f, -(float)midiNote/12.f);
+        note=std::pow(2.f, -((float)midiNote)/12.f);
         noteSlidePos=0;
     }
 
@@ -198,10 +198,6 @@ protected:
 
         ActivationFunctionType activationFunction=activation.load(std::memory_order_release);
 
-
-        int currentLoopDelay=lastDelay;
-        int lastLoopDelay=currentLoopDelay;
-
         time1+=getTimeInterval();
 
         Eigen::Map<Eigen::Matrix<float, MAX_MATRIX_SIZE, MAX_MATRIX_SIZE, Eigen::RowMajor>, Eigen::Aligned64>
@@ -218,7 +214,7 @@ protected:
                 handleMidi(&(midiEvents[curEventIndex++]));
 
             }
-            int delay;
+            float delay;
             float noteSlideIncrement=1/fNoteSlide;
             float notePosDelay;
             if(noteSlidePos<1.f){
@@ -228,17 +224,16 @@ protected:
             }else{
                 notePosDelay=fDelay*note;
             }
-            delay=(int)std::max(0.f,std::min(notePosDelay,(float)MAX_DELAY));
-            int temp=delay-lastDelay;
-            int temp2=(temp*((int)sample+1))/(int)frames;
+            delay=std::max(0.f,std::min(notePosDelay,(float)MAX_DELAY));
+            delay=delay*0.1f+lastDelay*0.9f;
 
-            currentLoopDelay=lastDelay+temp2;
-            int newIndex=(inputBufferIndex+lastLoopDelay-currentLoopDelay+MAX_DELAY+1)%(MAX_DELAY+1);
-            if(newIndex<0)std::cout<<"ERRORR!!!!!"<<"ERRRORRRR!!!!!!"<<std::endl<<"current "<<
-                          currentLoopDelay<<" lastD "<<lastDelay<<"   delay "<<delay<<"    sammple "<<sample<<"    frames"<<frames<<
-                    "    temp"<<temp<<"    temp2 "<<temp2<<  std::endl;
+            int newIndex=(inputBufferIndex+((int)lastDelay)-((int)delay)+MAX_DELAY+1)%(MAX_DELAY+1);
+            if(newIndex<0)std::cout<<"ERRORR!!!!!"<<"ERRRORRRR!!!!!!"<<std::endl<<
+                          " lastD "<<lastDelay<<"   delay "<<delay<<"    sammple "<<sample<<"    frames"<<frames<<
+                      std::endl;
             else inputBufferIndex=newIndex;
-            lastLoopDelay=currentLoopDelay;
+            lastDelay=delay;
+
 
             time3+=getTimeInterval();
             Eigen::Map<Eigen::Vector<float, MAX_MATRIX_SIZE>> x(inputBuffer[inputBufferIndex]);
@@ -298,7 +293,7 @@ protected:
             outputs[0][sample]=rawY[0];outputs[1][sample]=rawY[1];
 
             inputBufferIndex=(inputBufferIndex+1)%(MAX_DELAY+1);
-            float *buf=inputBuffer[inputBufferIndex];
+            float *buf=inputBuffer[(inputBufferIndex+(int)delay+(MAX_DELAY+1))%(MAX_DELAY+1)];
             for(int i=0;i<fMatrixSize;i++){
                 buf[i]=rawY[i];
             }
@@ -306,7 +301,6 @@ protected:
             time8+=getTimeInterval();
 
         }
-        lastDelay=lastLoopDelay;
     }
 
     // ----------------------------------------------------------------------------------------------------------------

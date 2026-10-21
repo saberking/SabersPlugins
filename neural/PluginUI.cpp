@@ -323,6 +323,8 @@ protected:
                 if(ImGui::IsItemActivated())
                     editParameter(kParamMatrixSize,true);
                 setParameterValue(kParamMatrixSize,std::max(2,std::min(30,fMatrixSize)));
+                normaliseMatrix();
+
             }
 
             if (ImGui::IsItemDeactivated())
