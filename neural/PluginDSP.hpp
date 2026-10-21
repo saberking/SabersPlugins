@@ -31,7 +31,7 @@ class ImGuiPluginDSP : public Plugin
     bool needsNormalise=false;
 public:
     std::atomic<ActivationFunctionType> activation=activationFunctionClip;
-    int lastDelay=0;
+    float lastDelay=0;
 
 
     alignas(64) float inputBuffer[MAX_DELAY+1][MAX_MATRIX_SIZE];
@@ -225,7 +225,7 @@ protected:
                 notePosDelay=fDelay*note;
             }
             delay=std::max(0.f,std::min(notePosDelay,(float)MAX_DELAY));
-            delay=delay*0.1f+lastDelay*0.9f;
+            if(std::abs(delay-lastDelay)>=1.f)delay=delay*0.1f+lastDelay*0.9f;
 
             int newIndex=(inputBufferIndex+((int)lastDelay)-((int)delay)+MAX_DELAY+1)%(MAX_DELAY+1);
             if(newIndex<0)std::cout<<"ERRORR!!!!!"<<"ERRRORRRR!!!!!!"<<std::endl<<
