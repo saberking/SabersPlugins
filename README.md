@@ -3,8 +3,6 @@ DPF ImGui plugins for making techno.
 
 Windows and WINE are supported.
 
-Uses DPF framework.
-
 ### Plugin 1: BAKED
 
 Sampler with spectral editing.
