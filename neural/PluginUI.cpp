@@ -20,6 +20,15 @@
 START_NAMESPACE_DISTRHO
 
 
+
+static UINT WM_TRIGGER_CLAP_MENU = 0;
+struct AsyncMenuPayload {//for right click autmoaiton clip
+    const clap_host_t* host;
+    int32_t screenX;
+    int32_t screenY;
+    int parameter;
+};
+
 //for right click autmoaiton clip
 class ImGuiPluginUI : public UI
 {
@@ -54,6 +63,16 @@ public:
 
         // Set the global window background color
         style.Colors[ImGuiCol_WindowBg] = ImVec4(63.0f / 255.0f, 72.0f / 255.0f, 77.0f / 255.0f, 0.12f);
+
+        WM_TRIGGER_CLAP_MENU = ::RegisterWindowMessageA("MyUniquePlugin_ClapContextMenu_TriggerMsg");
+        HWND hwnd = (HWND)getWindow().getNativeWindowHandle();
+        const uint32_t activeFormat = getPluginFormat();
+
+        if (activeFormat == 1)
+        {
+            if(DEBUG)std::cout<<"setwindowsublcass\n";
+            ::SetWindowSubclass(hwnd, SubclassMenuProc, reinterpret_cast<UINT_PTR>(this), 0);
+        }
 
     }
 
@@ -114,9 +133,88 @@ public:
         }
     }
 
-    // Window& getWindow() const override {
-    //     return UI::getWindow();
-    // }
+
+    static LRESULT CALLBACK SubclassMenuProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+                                             UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+    {
+        if (uMsg == WM_TRIGGER_CLAP_MENU)
+        {
+            // Safely extract the heap data passed through the OS message queue
+            auto* payload = reinterpret_cast<AsyncMenuPayload*>(wParam);
+            if (payload)
+            {
+                if(payload->host)
+                {
+                    if(DEBUG)std::cout<<"LRESULT CALLBACK"<<std::endl;
+                    auto* menuExt = (const clap_host_context_menu_t*)payload->host->get_extension(payload->host, CLAP_EXT_CONTEXT_MENU);
+                    if (menuExt && menuExt->popup)
+                    {
+                        clap_context_menu_target_t target;
+                        target.kind = CLAP_CONTEXT_MENU_TARGET_KIND_PARAM;
+                        target.id = payload->parameter;
+
+                        // Open the menu cleanly outside of the active ImGui/DPF render cycle.
+                        // This un-freezes both windows and eliminates the multi-instance crash!
+                        menuExt->popup(payload->host, &target, 0, payload->screenX, payload->screenY);
+                    }
+
+
+                }
+                // Delete the temporary payload allocation immediately after use
+                delete payload;
+
+            }
+            return 0;
+        }
+
+
+        // Pass every other standard OS window message safely back to DPF
+        return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+    }
+
+    void enableRightClick(int parameter)
+    {
+        const uint32_t activeFormat = getPluginFormat();
+        if (activeFormat == 1)
+        {
+            if(ImGui::IsItemHovered()&& ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            {
+                const clap_host_t* host=static_cast<const clap_host_t*>(getPluginDPSPointer()->host);
+                HWND hwnd = reinterpret_cast<HWND>(getWindow().getNativeWindowHandle());
+
+                if(host){
+                    // Query DAW for the context menu extension
+                    auto* menuExt = (const clap_host_context_menu_t*)host->get_extension(host, CLAP_EXT_CONTEXT_MENU);
+                    if(DEBUG)std::cout<<"menuExt"<<std::endl;
+                    if (menuExt && menuExt->popup)
+                    {
+                        if(DEBUG)std::cout<<"pop"<<std::endl;
+
+
+                        ImVec2 mousePos = ImGui::GetMousePos();
+
+                        auto* payload = new AsyncMenuPayload();
+                        payload->host = host;
+                        payload->parameter=parameter;
+                        int xOffset=0,yOffset=0;
+                        // if (isVisible())getEmbeddedSubwindowOffset(xOffset,yOffset);
+                        payload->screenX = mousePos.x+xOffset;
+                        payload->screenY = mousePos.y+yOffset;
+
+                        ::PostMessage(hwnd, WM_TRIGGER_CLAP_MENU, reinterpret_cast<WPARAM>(payload), 0);
+                    }
+                }
+                ImGuiIO& io = ImGui::GetIO();
+                io.MouseClicked[ImGuiMouseButton_Right] = false;
+                io.MouseDown[ImGuiMouseButton_Right] = false;
+
+            }
+        }
+    }
+
+    Window& getWindow() const {
+        return UI::getWindow();
+    }
     void normaliseMatrix()
     {
         // 1. Instantiate a genuine, contiguous Eigen matrix representing the active sub-block

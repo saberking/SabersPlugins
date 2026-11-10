@@ -106,10 +106,8 @@ target_include_directories(neural PUBLIC dpf-widgets/generic)
 target_include_directories(neural PUBLIC dpf-widgets/opengl)
 target_include_directories(neural PUBLIC dpf-widgets/opengl/DearImGui)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(neural-ui PRIVATE comctl32)
+target_link_libraries(neural-ui PRIVATE comctl32)
 
-endif()
 # 1. Enable full optimizations, fast-math, and native SIMD instructions (AVX/AVX2/NEON)
 target_compile_options(neural PRIVATE
     -O3
@@ -156,10 +154,8 @@ target_include_directories(GRAM PUBLIC dpf-widgets/generic)
 target_include_directories(GRAM PUBLIC dpf-widgets/opengl)
 target_include_directories(GRAM PUBLIC dpf-widgets/opengl/DearImGui)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(GRAM-ui PRIVATE comctl32)
+target_link_libraries(GRAM-ui PRIVATE comctl32)
 
-endif()
 # 1. Enable full optimizations, fast-math, and native SIMD instructions (AVX/AVX2/NEON)
 target_compile_options(GRAM PRIVATE
     -O3
