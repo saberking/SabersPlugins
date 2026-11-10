@@ -1,7 +1,7 @@
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
-#define DEBUG 1
+#define DEBUG 0
 // Define the 25 biquads.
 // Format: X(index)
 #define BIQUAD_LIST \

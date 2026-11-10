@@ -361,6 +361,8 @@ protected:
                 normaliseMatrix();
 
             }
+            enableRightClick(kParamMaxEigenvalue);
+
             if(ImGui::IsItemDeactivated()){
                 editParameter(kParamMaxEigenvalue,false);
             }
@@ -397,6 +399,7 @@ protected:
                     editParameter(kParamDelay,true);
                 setParameterValue(kParamDelay,(float)std::max(0,std::min(MAX_DELAY,(int)fDelay)));
             }
+            enableRightClick(kParamDelay);
 
             if (ImGui::IsItemDeactivated())
             {
@@ -409,6 +412,7 @@ protected:
                     editParameter(kParamNoteSlide,true);
                 setParameterValue(kParamNoteSlide,(float)std::max(1.f,std::min(4000.f,fNoteSlide)));
             }
+            enableRightClick(kParamNoteSlide);
 
             if (ImGui::IsItemDeactivated())
             {
@@ -423,6 +427,7 @@ protected:
                 normaliseMatrix();
 
             }
+            enableRightClick(kParamMatrixSize);
 
             if (ImGui::IsItemDeactivated())
             {
@@ -481,6 +486,8 @@ protected:
                         setParameterValue((i+2)*MAX_MATRIX_SIZE+j,weightMatrix(i,j));
                         normaliseMatrix();
                     }
+                    enableRightClick((i+2)*MAX_MATRIX_SIZE+j);
+
                     if (ImGui::IsItemDeactivated())
                     {
                         editParameter((i+2)*MAX_MATRIX_SIZE+j, false);
