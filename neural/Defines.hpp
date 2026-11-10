@@ -1,7 +1,7 @@
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
-#define DEBUG 1
+#define DEBUG 0
 #define MAX_MATRIX_SIZE 30
 
 enum Parameters{

@@ -133,7 +133,7 @@ public:
         Eigen::EigenSolver<Eigen::MatrixXf> solver(W, false);
         float maxMagnitude = solver.eigenvalues().array().abs().maxCoeff();
 
-        std::cout << "normalise " << maxMagnitude << std::endl;
+        if(DEBUG)std::cout << "normalise " << maxMagnitude << std::endl;
 
         // 4. Scale our safe local matrix block
         float mult = fMaxEigenvalue / std::max(0.001f, maxMagnitude);

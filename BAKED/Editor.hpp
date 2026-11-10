@@ -170,7 +170,7 @@ public:
 
         if (activeFormat == 1)
         {
-            std::cout<<"setwindowsublcass\n";
+            if(DEBUG)std::cout<<"setwindowsublcass\n";
             ::SetWindowSubclass(hwnd, SubclassMenuProc, reinterpret_cast<UINT_PTR>(this), 0);
         }
 
@@ -218,7 +218,7 @@ public:
             {
                 if(payload->host)
                 {
-                    std::cout<<"LRESULT CALLBACK"<<std::endl;
+                    if(DEBUG)std::cout<<"LRESULT CALLBACK"<<std::endl;
                     auto* menuExt = (const clap_host_context_menu_t*)payload->host->get_extension(payload->host, CLAP_EXT_CONTEXT_MENU);
                     if (menuExt && menuExt->popup)
                     {
@@ -535,7 +535,7 @@ public:
         int target_idx = std::distance(vec.begin(), move_target);
         int source_idx = std::distance(vec.begin(), move_source);
 
-        std::cout << "Erasong!!!!!!!!!!!!!!" << target_idx << ", " << source_idx << std::endl;
+        if(DEBUG)std::cout << "Erasong!!!!!!!!!!!!!!" << target_idx << ", " << source_idx << std::endl;
 
         std::move(move_source, vec.end(), move_target);
 
@@ -606,7 +606,7 @@ public:
         if(!isDragSavedForUndo)
         {
             isDragSavedForUndo=true;
-            std::cout<<"Adding drag undo in startdraf"<<std::endl;
+            if(DEBUG)std::cout<<"Adding drag undo in startdraf"<<std::endl;
             addDragUndoItem(type);
         }
     }
@@ -616,7 +616,7 @@ public:
         bool editButtonSelected=selectedButtonIndex==toolbarButtonsEraser||selectedButtonIndex==toolbarButtonsLine||selectedButtonIndex==toolbarButtonsPencil;
         if(isDragging&&editButtonSelected)
         {
-            std::cout<<"ending dra "<<(int)selectedButtonIndex<<std::endl;
+            if(DEBUG)std::cout<<"ending dra "<<(int)selectedButtonIndex<<std::endl;
             if(selectedButtonIndex==toolbarButtonsLine)
             {
 
@@ -686,7 +686,7 @@ public:
         {
             if(!isDragSavedForUndo)
             {
-                std::cout<<"Adding drag undo in handldrag"<<std::endl;
+                if(DEBUG)std::cout<<"Adding drag undo in handldrag"<<std::endl;
 
                 isDragSavedForUndo=true;
                 addDragUndoItem(type);
@@ -881,14 +881,14 @@ public:
         }
         module->process();
         if(shouldContinue) undo();
-        std::cout<<"finished undoing"<<dspPointer->nextUndoIndex<<std::endl;
+        if(DEBUG)std::cout<<"finished undoing"<<dspPointer->nextUndoIndex<<std::endl;
     }
     void redo()
     {
         dspPointer->undoCount=std::min(MAX_UNDO_DEPTH-2,dspPointer->undoCount+1);
         dspPointer->redoCount=std::max(0,dspPointer->redoCount-1);
 
-        std::cout<<"redo"<<dspPointer->nextUndoIndex<<std::endl;
+        if(DEBUG)std::cout<<"redo"<<dspPointer->nextUndoIndex<<std::endl;
         int nextIndex=(dspPointer->nextUndoIndex+1)%MAX_UNDO_DEPTH;
         bool shouldContinue=(dspPointer->redoCount&&undoItems[nextIndex]->shouldContinue);
         UndoItem *tempRedoPtr=copyUndoItem(undoItems[dspPointer->nextUndoIndex]);
@@ -910,7 +910,7 @@ public:
     {
         dspPointer->undoCount=std::min(MAX_UNDO_DEPTH-2,dspPointer->undoCount+1);
         dspPointer->redoCount=std::max(0,dspPointer->redoCount-1);
-        std::cout<<"addundoitem "<<dspPointer->nextUndoIndex<<std::endl;
+        if(DEBUG)std::cout<<"addundoitem "<<dspPointer->nextUndoIndex<<std::endl;
         int currentIndex=(dspPointer->nextUndoIndex-1+MAX_UNDO_DEPTH)%MAX_UNDO_DEPTH;
 
         if(undoItems[dspPointer->nextUndoIndex])
@@ -961,7 +961,7 @@ public:
     {
         if(vec1==vec2)std::cout<<"BIFGGGGGGGGGGERRRRPRRRRRRRRR"<<std::endl;
         addUndoItem(vec1);
-        std::cout<<"added paste undo"<<std::endl;
+        if(DEBUG)std::cout<<"added paste undo"<<std::endl;
 
         for(int i=0;i<copyLength;i++)
         {
@@ -1160,10 +1160,10 @@ public:
                 if(host){
                     // Query DAW for the context menu extension
                     auto* menuExt = (const clap_host_context_menu_t*)host->get_extension(host, CLAP_EXT_CONTEXT_MENU);
-                    std::cout<<"menuExt"<<std::endl;
+                    if(DEBUG)std::cout<<"menuExt"<<std::endl;
                     if (menuExt && menuExt->popup)
                     {
-                        std::cout<<"pop"<<std::endl;
+                        if(DEBUG)std::cout<<"pop"<<std::endl;
 
 
                         ImVec2 mousePos = ImGui::GetMousePos();
@@ -1535,7 +1535,7 @@ public:
                 {
                     paste((DataType)(dataTypeWaveL+channel));
                     isWaveformChanged[channel]=true;
-                    std::cout<<"iswaveformchanged=true"<<std::endl;
+                    if(DEBUG)std::cout<<"iswaveformchanged=true"<<std::endl;
                     if(isLiveUpdate)
                     {
                         calculateFFT(channel);

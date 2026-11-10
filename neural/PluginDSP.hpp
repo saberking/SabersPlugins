@@ -94,7 +94,7 @@ public:
         for (int i = 0; i < MAX_MATRIX_SIZE; ++i) {
             maxMagnitude = std::max(maxMagnitude, std::abs(solver.eigenvalues()[i]));
         }
-        std::cout<<"maxMAgnitude "<<maxMagnitude<<std::endl;
+        if(DEBUG)std::cout<<"maxMAgnitude "<<maxMagnitude<<std::endl;
         //float mult=1/findMaxAmplification(outPointer);
 
     }
@@ -106,6 +106,7 @@ public:
 
     void printMatrix()
     {
+        if(!DEBUG)return;
         for(int i=0;i<MAX_MATRIX_SIZE;i++){
             for(int j=0;j<MAX_MATRIX_SIZE;j++)        std::cout<<weightMatrix(i,j)<<" ";
             std::cout<<std::endl;
@@ -169,6 +170,7 @@ protected:
     int framecounter=0;
     void printTime()
     {
+        if(!DEBUG)return;
         std::cout<<"Time"<<std::endl;
         std::cout<<time1<<"    "<<time2<<"   "<<time3<<"    "<<time4<<"   "<<time5<<"    "<<time6<<"   "<<time7<<"    "<<time8<<std::endl;
         time1=time2=time3=time4=time5=time6=time7=time8=0.f;
@@ -228,10 +230,11 @@ protected:
             if(std::abs(delay-lastDelay)>=1.f)delay=delay*0.1f+lastDelay*0.9f;
 
             int newIndex=(inputBufferIndex+((int)lastDelay)-((int)delay)+MAX_DELAY+1)%(MAX_DELAY+1);
-            if(newIndex<0)std::cout<<"ERRORR!!!!!"<<"ERRRORRRR!!!!!!"<<std::endl<<
+            if(newIndex<0){
+                std::cout<<"ERRORR!!!!!"<<"ERRRORRRR!!!!!!"<<std::endl<<
                           " lastD "<<lastDelay<<"   delay "<<delay<<"    sammple "<<sample<<"    frames"<<frames<<
                       std::endl;
-            else inputBufferIndex=newIndex;
+            } else inputBufferIndex=newIndex;
             lastDelay=delay;
 
 
